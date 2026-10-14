@@ -566,9 +566,20 @@ spawn(function()
 
     spawn(function()
         while isAlive() do
-            if State.AutoCollect and R.EquipBest then
-                fireRE(R.EquipBest)
-                Stats.Collected = Stats.Collected + 1
+            if State.AutoCollect then
+                -- Collect uang dari semua slot (1-20)
+                if R.CollectBalance then
+                    for slot = 1, 20 do
+                        if not isAlive() or not State.AutoCollect then break end
+                        fireRE(R.CollectBalance, slot)
+                        wait(0.15)
+                    end
+                    Stats.Collected = Stats.Collected + 1
+                end
+                -- EquipBest: re-place unit terbaik
+                if R.EquipBest then
+                    fireRE(R.EquipBest)
+                end
             end
             wait(CONFIG.CollectDelay)
         end

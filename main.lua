@@ -1,45 +1,22 @@
 --[[
     ╔══════════════════════════════════════════════════════════════════╗
-    ║          🎲 ANIME DICE AFK HUB v2.0 — DELTA EXECUTOR 🎲        ║
+    ║          🎲 ANIME DICE AFK HUB v2.1 — DELTA EXECUTOR 🎲        ║
     ║                                                                  ║
-    ║  Remote paths SUDAH DIISI dari source code open-source.          ║
-    ║  Paste SELURUH script ini ke Delta Executor lalu Execute.        ║
+    ║  Copas link ini ke Delta Executor:                               ║
+    ║  loadstring(game:HttpGet("https://cdn.jsdelivr.net/gh/          ║
+    ║    ahmdmzkiid-lgtm/animedicejek@main/main.lua", true))()        ║
     ║                                                                  ║
     ║  Struktur Remote: ReplicatedStorage.Network.[Service].[RE/RF]    ║
-    ║  Data Controller: ReplicatedStorage.Framework.Features.Data      ║
     ╚══════════════════════════════════════════════════════════════════╝
-
-    REMOTE MAP (verified dari open-source scripts):
-    ┌─────────────────────────────────────────────────────────────────┐
-    │ RollDice        = Network.RollService.RF.RollDice (InvokeServer)│
-    │ EquipBest       = Network.PlotService.RE.EquipBest (FireServer) │
-    │ CollectBalance  = Network.PlotService.RE.CollectBalance         │
-    │ LevelUpSlot     = Network.PlotService.RE.LevelUpSlot            │
-    │ InteractSlot    = Network.PlotService.RE.InteractSlot           │
-    │ BuyDice         = Network.DiceShopService.RE.BuyDice            │
-    │ EquipDice       = Network.DiceShopService.RE.EquipDice          │
-    │ Rebirth         = Network.RebirthService.RE.Rebirth             │
-    │ AddStat         = Network.RebirthService.RE.AddStat             │
-    │ SellInventory   = Network.SellService.RF.SellInventory          │
-    │ UpdateAutoSell  = Network.SellService.RE.UpdateAutoSell         │
-    │ BuyUpgrade      = Network.RE.BuyUpgrade                         │
-    │ RedeemCode      = Network.CodesService.RE.RedeemCode            │
-    │ PlayTower       = Network.Towers.RF.PlayTower (InvokeServer)    │
-    │ CompleteTowerFloor = Network.Towers.RF.CompleteTowerFloor       │
-    │ CancelTower     = Network.Towers.RF.CancelTower                 │
-    │ EquipBestTower  = Network.Towers.RE.EquipBestTowerTeam          │
-    │ ClaimOffline    = Network.OfflineEarningsService.RE.Claim        │
-    │ ClaimDaily      = Network.DailyRewardService.RE.Claim            │
-    │ ClaimGroup      = Network.GroupRewardService.RE.Claim             │
-    │ GradeRoll       = Network.GradeService.RE.Roll                   │
-    │ TraitRoll       = Network.TraitService.RE.Roll                   │
-    │ BoostUse        = Network.BoostService.RE.Use                    │
-    │ UseSpin         = Network.SpinService.RE.Use                     │
-    │ Fuse            = Network.FusingService.RE.Fuse                  │
-    │ QuestClaim      = Network.QuestService.RE.Claim                  │
-    │ QuestBuy        = Network.QuestService.RE.Buy                    │
-    └─────────────────────────────────────────────────────────────────┘
 ]]
+
+-- ╔══════════════════════════════════════════════════════════════╗
+-- ║  STAGE 0: BASIC PRINT TEST — kalau ini ga keluar, Delta    ║
+-- ║  belum inject. Kalau keluar, lanjut.                        ║
+-- ╚══════════════════════════════════════════════════════════════╝
+print("==============================================")
+print("  [AnimeDice] v2.1 STARTING...")
+print("==============================================")
 
 -- ╔══════════════════════════════════════════════════════════════╗
 -- ║                     KONFIGURASI USER                         ║
@@ -48,56 +25,49 @@
 
 local CONFIG = {
     -- ═══ TIMING (detik) ═══
-    RollDelay       = 2.2,   -- Server cooldown ~2 detik, jangan lebih cepat
-    CollectDelay    = 10,    -- EquipBest sekaligus collect + re-place terbaik
-    SellDelay       = 5,     -- Check inventory tiap 5 detik
-    RebirthDelay    = 15,    -- Check rebirth tiap 15 detik
-    TowerDelay      = 1,     -- Delay antar floor tower
-    UpgradeDelay    = 10,    -- Check upgrade tiap 10 detik
-    DiceDelay       = 10,    -- Check beli dice tiap 10 detik
-    CodeDelay       = 2,     -- Delay antar redeem code
-    ClaimDelay      = 30,    -- Claim rewards tiap 30 detik
-    AntiAFKDelay    = 60,    -- Anti-idle tiap 60 detik
-    BoostDelay      = 30,    -- Check boost tiap 30 detik
-    SpinDelay       = 3,     -- Delay antar spin usage
-    LevelDelay      = 5,     -- Delay antar level up slot
-    StatsDelay      = 10,    -- Delay antar rebirth stat add
+    RollDelay       = 2.2,
+    CollectDelay    = 10,
+    SellDelay       = 5,
+    RebirthDelay    = 15,
+    TowerDelay      = 1,
+    UpgradeDelay    = 10,
+    DiceDelay       = 10,
+    CodeDelay       = 2,
+    ClaimDelay      = 30,
+    AntiAFKDelay    = 60,
+    BoostDelay      = 30,
+    SpinDelay       = 3,
+    LevelDelay      = 5,
+    StatsDelay      = 10,
 
     -- ═══ AUTO SELL FILTER ═══
-    -- Rarity sort order: Common=1, Uncommon=2, Rare=3, Epic=4, Legendary=5,
-    -- Mythical=6, Divine=7, Exotic=8, Celestial=9, Secret=10, Heavenly=11
-    SellBelowRarity = 3,     -- Jual otomatis unit di bawah Rare (1=Common, 2=Uncommon)
-    KeepBestSpares  = 20,    -- Simpan 20 unit terbaik saat inventory penuh
+    SellBelowRarity = 3,
+    KeepBestSpares  = 20,
 
     -- ═══ AUTO REBIRTH ═══
-    RebirthMultiplier = 1,   -- Rebirth saat uang = cost x multiplier ini
+    RebirthMultiplier = 1,
 
     -- ═══ AUTO TOWER ═══
-    TowerName = nil,         -- nil = auto pick tower terbaik
+    TowerName = nil,
 
     -- ═══ AUTO UPGRADE ═══
     UpgradeCategories = {"Money", "Luck", "Fortune", "Roll Speed", "Unit Storage", "Sell"},
 
-    -- ═══ CODES (tambahkan code baru di sini) ═══
+    -- ═══ CODES ═══
     Codes = {
         "RELEASE", "UPDATE1", "UPDATE2", "UPDATE3", "UPDATE4", "UPDATE5",
         "SORRY", "THANKYOU", "100KLIKES", "200KLIKES", "CODES", "FREE",
     },
 
-    -- ═══ BOOST NAMES ═══
+    -- ═══ BOOST / SPIN ═══
     BoostNames = {"Luck", "Income", "Roll Speed"},
-
-    -- ═══ SPIN NAMES ═══
-    SpinNames = {"Lucky Spin", "Jackpot Spin"},
+    SpinNames  = {"Lucky Spin", "Jackpot Spin"},
 
     -- ═══ AUTO LEVEL SLOTS ═══
-    LevelShare  = 0.3,   -- Max 30% uang dipakai untuk level up slots
+    LevelShare  = 0.3,
 
     -- ═══ AUTO REBIRTH STATS ═══
-    RebirthStatPick = "Money", -- Stat yang di-upgrade: "Money", "Luck", etc.
-
-    -- ═══ GUI ═══
-    ToggleKey = Enum.KeyCode.RightControl,
+    RebirthStatPick = "Money",
 }
 
 -- ╔══════════════════════════════════════════════════════════════╗
@@ -105,22 +75,72 @@ local CONFIG = {
 -- ╚══════════════════════════════════════════════════════════════╝
 
 -- ═══════════════════════════════════════
--- SERVICES
+-- SAFE SERVICE GETTER
+-- Beberapa service (VirtualInputManager, VirtualUser)
+-- ga ada di semua executor. Harus pcall.
 -- ═══════════════════════════════════════
-local Players           = game:GetService("Players")
-local RS                = game:GetService("ReplicatedStorage")
-local UIS               = game:GetService("UserInputService")
-local VIM               = game:GetService("VirtualInputManager")
-local RunService        = game:GetService("RunService")
-local StarterGui        = game:GetService("StarterGui")
+local function safeGetService(name)
+    local ok, svc = pcall(function()
+        return game:GetService(name)
+    end)
+    if ok and svc then
+        return svc
+    end
+    warn("[AnimeDice] Service '" .. name .. "' tidak tersedia di executor ini")
+    return nil
+end
 
-local Player    = Players.LocalPlayer
--- PENTING: jangan :Wait() tanpa batas — bisa nyangkut selamanya kalau
--- karakter belum spawn saat Execute (bikin "ga terjadi apa-apa").
+print("[AnimeDice] Loading services...")
+
+local Players    = game:GetService("Players")
+local RS         = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+
+-- Services yang MUNGKIN ga ada di mobile executor
+local UIS = safeGetService("UserInputService")
+local VIM = safeGetService("VirtualInputManager")
+local VU  = safeGetService("VirtualUser")
+
+print("[AnimeDice] Services loaded OK")
+
+-- ═══════════════════════════════════════
+-- PLAYER & CHARACTER (safe, no infinite wait)
+-- ═══════════════════════════════════════
+local Player = Players.LocalPlayer
+if not Player then
+    warn("[AnimeDice] LocalPlayer nil! Aborting.")
+    return
+end
+print("[AnimeDice] Player: " .. Player.Name)
+
 local Character = Player.Character
 if not Character then
-    Character = Player.CharacterAdded:Wait()
+    print("[AnimeDice] Waiting for character (max 10s)...")
+    local startWait = tick()
+    local charConn
+    local charReady = false
+
+    charConn = Player.CharacterAdded:Connect(function(c)
+        Character = c
+        charReady = true
+    end)
+
+    while not charReady and (tick() - startWait) < 10 do
+        wait(0.5)
+    end
+
+    if charConn then charConn:Disconnect() end
+
+    if not Character then
+        Character = Player.Character
+    end
+
+    if not Character then
+        warn("[AnimeDice] Character tidak muncul dalam 10 detik. Lanjut tanpa character.")
+    end
 end
+print("[AnimeDice] Character: " .. tostring(Character and Character.Name or "none"))
 
 -- ═══════════════════════════════════════
 -- GENERATION GUARD (safe re-execute)
@@ -170,102 +190,143 @@ local Stats = {
 }
 
 -- ═══════════════════════════════════════
--- REMOTE SETUP
+-- REMOTE SETUP (full pcall protection)
 -- ═══════════════════════════════════════
-local Network   = RS:WaitForChild("Network", 5)
-local Framework = RS:WaitForChild("Framework", 5)
+print("[AnimeDice] Looking for Network folder...")
+local Network, Framework
 
-if not Network then
-    warn("[AnimeDice] Folder 'ReplicatedStorage.Network' tidak ditemukan!")
-    warn("  Script tetap jalan & GUI muncul, tapi semua remote akan kosong.")
-    warn("  Kemungkinan: nama folder beda, atau kamu Execute sebelum game load.")
+local netOk, netErr = pcall(function()
+    Network = RS:WaitForChild("Network", 10)
+end)
+if not netOk then
+    warn("[AnimeDice] Error waiting for Network: " .. tostring(netErr))
 end
-if not Framework then
-    warn("[AnimeDice] Folder 'ReplicatedStorage.Framework' tidak ditemukan!")
+
+local fwOk, fwErr = pcall(function()
+    Framework = RS:WaitForChild("Framework", 10)
+end)
+if not fwOk then
+    warn("[AnimeDice] Error waiting for Framework: " .. tostring(fwErr))
+end
+
+if Network then
+    print("[AnimeDice] ✅ Network folder found!")
+else
+    warn("[AnimeDice] ❌ Network folder NOT found!")
+    warn("[AnimeDice] GUI will still appear, but remotes won't work.")
+    warn("[AnimeDice] Make sure you Execute AFTER the game fully loads.")
+end
+
+if Framework then
+    print("[AnimeDice] ✅ Framework folder found!")
+else
+    warn("[AnimeDice] ❌ Framework folder NOT found!")
 end
 
 -- Helper: navigate nested path under Network
 local function svc(path)
-    local node = Network
-    for part in string.gmatch(path, "[^%.]+") do
-        node = node and node:FindFirstChild(part)
-    end
-    return node
+    if not Network then return nil end
+    local ok, result = pcall(function()
+        local node = Network
+        for part in string.gmatch(path, "[^%.]+") do
+            if not node then return nil end
+            node = node:FindFirstChild(part)
+        end
+        return node
+    end)
+    return ok and result or nil
 end
 
--- All remotes (verified from open-source)
-local R = {
-    -- Rolling
-    RollDice        = svc("RollService.RF.RollDice"),         -- RF (InvokeServer)
-    SetAutoRoll     = svc("RollService.RE.SetAutoRoll"),      -- RE
+-- All remotes
+print("[AnimeDice] Loading remotes...")
+local R = {}
 
-    -- Plot / Income
-    EquipBest       = svc("PlotService.RE.EquipBest"),        -- RE: collect + re-equip best
-    CollectBalance  = svc("PlotService.RE.CollectBalance"),   -- RE: collect 1 slot
-    LevelUpSlot     = svc("PlotService.RE.LevelUpSlot"),      -- RE
-    InteractSlot    = svc("PlotService.RE.InteractSlot"),      -- RE
+local remoteOk, remoteErr = pcall(function()
+    R = {
+        -- Rolling
+        RollDice        = svc("RollService.RF.RollDice"),
+        SetAutoRoll     = svc("RollService.RE.SetAutoRoll"),
 
-    -- Dice Shop
-    BuyDice         = svc("DiceShopService.RE.BuyDice"),      -- RE
-    EquipDice       = svc("DiceShopService.RE.EquipDice"),    -- RE
+        -- Plot / Income
+        EquipBest       = svc("PlotService.RE.EquipBest"),
+        CollectBalance  = svc("PlotService.RE.CollectBalance"),
+        LevelUpSlot     = svc("PlotService.RE.LevelUpSlot"),
+        InteractSlot    = svc("PlotService.RE.InteractSlot"),
 
-    -- Rebirth
-    Rebirth         = svc("RebirthService.RE.Rebirth"),       -- RE
-    AddStat         = svc("RebirthService.RE.AddStat"),       -- RE
+        -- Dice Shop
+        BuyDice         = svc("DiceShopService.RE.BuyDice"),
+        EquipDice       = svc("DiceShopService.RE.EquipDice"),
 
-    -- Sell
-    SellInventory   = svc("SellService.RF.SellInventory"),    -- RF (InvokeServer)
-    UpdateAutoSell  = svc("SellService.RE.UpdateAutoSell"),   -- RE
+        -- Rebirth
+        Rebirth         = svc("RebirthService.RE.Rebirth"),
+        AddStat         = svc("RebirthService.RE.AddStat"),
 
-    -- Upgrades
-    BuyUpgrade      = svc("RE.BuyUpgrade"),                   -- RE (langsung di Network.RE)
+        -- Sell
+        SellInventory   = svc("SellService.RF.SellInventory"),
+        UpdateAutoSell  = svc("SellService.RE.UpdateAutoSell"),
 
-    -- Codes
-    RedeemCode      = svc("CodesService.RE.RedeemCode") or svc("MonetizationService.RE.RedeemCode"),
+        -- Upgrades
+        BuyUpgrade      = svc("RE.BuyUpgrade"),
 
-    -- Tower
-    PlayTower       = svc("Towers.RF.PlayTower"),             -- RF
-    CompleteTowerFloor = svc("Towers.RF.CompleteTowerFloor"), -- RF
-    CancelTower     = svc("Towers.RF.CancelTower"),           -- RF
-    EquipBestTower  = svc("Towers.RE.EquipBestTowerTeam"),    -- RE
+        -- Codes
+        RedeemCode      = svc("CodesService.RE.RedeemCode") or svc("MonetizationService.RE.RedeemCode"),
 
-    -- Claims / Rewards
-    ClaimOffline    = svc("OfflineEarningsService.RE.Claim"), -- RE
-    ClaimDaily      = svc("DailyRewardService.RE.Claim"),     -- RE
-    ClaimGroup      = svc("GroupRewardService.RE.Claim"),      -- RE
+        -- Tower
+        PlayTower       = svc("Towers.RF.PlayTower"),
+        CompleteTowerFloor = svc("Towers.RF.CompleteTowerFloor"),
+        CancelTower     = svc("Towers.RF.CancelTower"),
+        EquipBestTower  = svc("Towers.RE.EquipBestTowerTeam"),
 
-    -- Quality: Grade & Trait
-    GradeRoll       = svc("GradeService.RE.Roll"),            -- RE
-    TraitRoll       = svc("TraitService.RE.Roll"),             -- RE
+        -- Claims / Rewards
+        ClaimOffline    = svc("OfflineEarningsService.RE.Claim"),
+        ClaimDaily      = svc("DailyRewardService.RE.Claim"),
+        ClaimGroup      = svc("GroupRewardService.RE.Claim"),
 
-    -- Boosts
-    BoostUse        = svc("BoostService.RE.Use"),             -- RE
+        -- Quality: Grade & Trait
+        GradeRoll       = svc("GradeService.RE.Roll"),
+        TraitRoll       = svc("TraitService.RE.Roll"),
 
-    -- Spins
-    UseSpin         = svc("SpinService.RE.Use"),              -- RE
+        -- Boosts
+        BoostUse        = svc("BoostService.RE.Use"),
 
-    -- Fuse
-    Fuse            = svc("FusingService.RE.Fuse"),           -- RE
-    FuseResult      = svc("FusingService.RE.Result"),         -- RE
+        -- Spins
+        UseSpin         = svc("SpinService.RE.Use"),
 
-    -- Quests
-    QuestClaim      = svc("QuestService.RE.Claim"),           -- RE
-    QuestBuy        = svc("QuestService.RE.Buy"),             -- RE
-}
+        -- Fuse
+        Fuse            = svc("FusingService.RE.Fuse"),
+        FuseResult      = svc("FusingService.RE.Result"),
+
+        -- Quests
+        QuestClaim      = svc("QuestService.RE.Claim"),
+        QuestBuy        = svc("QuestService.RE.Buy"),
+    }
+end)
+
+if not remoteOk then
+    warn("[AnimeDice] Error loading remotes: " .. tostring(remoteErr))
+    R = {}
+end
+
+print("[AnimeDice] Remotes loaded OK")
 
 -- ═══════════════════════════════════════
 -- DATA CONTROLLER (live player data)
 -- ═══════════════════════════════════════
 local DataController
 pcall(function()
-    DataController = require(Framework.Features.Data.DataController)
+    if Framework then
+        DataController = require(Framework.Features.Data.DataController)
+    end
 end)
 
 local function getData()
-    if DataController and DataController.___X then
-        return DataController.___X
-    end
-    return nil
+    local ok, result = pcall(function()
+        if DataController and DataController.___X then
+            return DataController.___X
+        end
+        return nil
+    end)
+    return ok and result or nil
 end
 
 -- ═══════════════════════════════════════
@@ -274,15 +335,19 @@ end
 local Dice, Rebirths, PlotConfig, UnitConfig, Grades, Traits
 local BuffController, TowersConfig, UpgradeConfig
 
-pcall(function() Dice           = require(Framework.Features.Rolling.Dice) end)
-pcall(function() Rebirths       = require(Framework.Features.Rebirth.Rebirths) end)
-pcall(function() PlotConfig     = require(Framework.Features.Plot.PlotConfig) end)
-pcall(function() UnitConfig     = require(Framework.Features.Inventory.Kinds.Unit.UnitConfig) end)
-pcall(function() Grades         = require(Framework.Features.Grades.Grades) end)
-pcall(function() Traits         = require(Framework.Features.Traits.Traits) end)
-pcall(function() BuffController = require(Framework.Features.Buffs.BuffController) end)
-pcall(function() TowersConfig   = require(Framework.Features.Towers.Towers) end)
-pcall(function() UpgradeConfig  = require(Framework.Features.Upgrades.Upgrades) end)
+if Framework then
+    pcall(function() Dice           = require(Framework.Features.Rolling.Dice) end)
+    pcall(function() Rebirths       = require(Framework.Features.Rebirth.Rebirths) end)
+    pcall(function() PlotConfig     = require(Framework.Features.Plot.PlotConfig) end)
+    pcall(function() UnitConfig     = require(Framework.Features.Inventory.Kinds.Unit.UnitConfig) end)
+    pcall(function() Grades         = require(Framework.Features.Grades.Grades) end)
+    pcall(function() Traits         = require(Framework.Features.Traits.Traits) end)
+    pcall(function() BuffController = require(Framework.Features.Buffs.BuffController) end)
+    pcall(function() TowersConfig   = require(Framework.Features.Towers.Towers) end)
+    pcall(function() UpgradeConfig  = require(Framework.Features.Upgrades.Upgrades) end)
+end
+
+print("[AnimeDice] Game configs loaded OK")
 
 -- ═══════════════════════════════════════
 -- UTILITY FUNCTIONS
@@ -326,26 +391,34 @@ end
 
 -- ═══════════════════════════════════════
 -- MODULE: ANTI-AFK
+-- Pakai VirtualUser + Idled connection
+-- VirtualInputManager di-skip kalau ga ada
 -- ═══════════════════════════════════════
 local function startAntiAFK()
-    -- Method 1: Idle connection
+    -- Method 1: Idle connection (paling aman)
     pcall(function()
-        local VU = game:GetService("VirtualUser")
-        Player.Idled:Connect(function()
-            VU:CaptureController()
-            VU:ClickButton2(Vector2.new())
-        end)
+        if VU then
+            Player.Idled:Connect(function()
+                pcall(function()
+                    VU:CaptureController()
+                    VU:ClickButton2(Vector2.new())
+                end)
+            end)
+            print("[AnimeDice] Anti-AFK: VirtualUser OK")
+        end
     end)
 
-    -- Method 2: Periodic
+    -- Method 2: Periodic key press (HANYA kalau VIM tersedia)
     spawn(function()
         while isAlive() do
             if State.AntiAFK then
-                pcall(function()
-                    VIM:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
-                    wait(0.1)
-                    VIM:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
-                end)
+                if VIM then
+                    pcall(function()
+                        VIM:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
+                        wait(0.1)
+                        VIM:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
+                    end)
+                end
             end
             wait(CONFIG.AntiAFKDelay)
         end
@@ -371,8 +444,6 @@ end
 
 -- ═══════════════════════════════════════
 -- MODULE: AUTO COLLECT (EquipBest)
--- EquipBest = collect ALL slot balances
---           + re-place best income units
 -- ═══════════════════════════════════════
 local function startAutoCollect()
     spawn(function()
@@ -388,12 +459,10 @@ end
 
 -- ═══════════════════════════════════════
 -- MODULE: AUTO SELL
--- UpdateAutoSell sets server-side auto sell
 -- ═══════════════════════════════════════
 local function startAutoSell()
-    -- Set server-side auto sell threshold
     spawn(function()
-        wait(3) -- Wait for game init
+        wait(3)
         if State.AutoSell and R.UpdateAutoSell then
             fireRE(R.UpdateAutoSell, CONFIG.SellBelowRarity)
         end
@@ -402,12 +471,9 @@ local function startAutoSell()
     spawn(function()
         while isAlive() do
             if State.AutoSell then
-                -- Update auto sell threshold
                 if R.UpdateAutoSell then
                     fireRE(R.UpdateAutoSell, CONFIG.SellBelowRarity)
                 end
-
-                -- Also do manual SellInventory untuk bersihkan backpack
                 if R.SellInventory then
                     local result = invokeRF(R.SellInventory)
                     if result then
@@ -431,8 +497,10 @@ local function startAutoRebirth()
                 if d then
                     local cost = nil
                     pcall(function()
-                        local info = Rebirths.Get(d.Rebirth + 1)
-                        cost = info and tonumber(info.cost)
+                        if Rebirths then
+                            local info = Rebirths.Get(d.Rebirth + 1)
+                            cost = info and tonumber(info.cost)
+                        end
                     end)
 
                     if cost and d.Money >= cost * CONFIG.RebirthMultiplier then
@@ -457,7 +525,6 @@ local function startAutoDice()
             if State.AutoDice and R.BuyDice and R.EquipDice and Dice then
                 local d = getData()
                 if d then
-                    -- Cari dice terbaik yang belum dimiliki & terjangkau
                     local allDice = {}
                     pcall(function()
                         local raw = Dice.GetAll()
@@ -471,7 +538,6 @@ local function startAutoDice()
                         table.sort(allDice, function(a, b) return a.luck < b.luck end)
                     end)
 
-                    -- Beli dice yang affordable
                     for _, die in ipairs(allDice) do
                         if die.price and not d.OwnedDice[die.key] and d.Money >= die.price then
                             fireRE(R.BuyDice, die.key)
@@ -480,7 +546,6 @@ local function startAutoDice()
                         end
                     end
 
-                    -- Equip dice terbaik yang dimiliki
                     local bestKey, bestLuck = nil, 0
                     for _, die in ipairs(allDice) do
                         if d.OwnedDice[die.key] and die.luck > bestLuck then
@@ -506,17 +571,19 @@ local function startAutoUpgrade()
             if State.AutoUpgrade and R.BuyUpgrade and UpgradeConfig then
                 local d = getData()
                 if d then
-                    for _, cat in ipairs(CONFIG.UpgradeCategories) do
-                        for name, def in pairs(UpgradeConfig) do
-                            if name:find(cat) and def.price and not d.Upgrades[name] then
-                                if d.Money >= tonumber(def.price) then
-                                    fireRE(R.BuyUpgrade, name)
-                                    Stats.Upgrades = Stats.Upgrades + 1
-                                    wait(0.3)
+                    pcall(function()
+                        for _, cat in ipairs(CONFIG.UpgradeCategories) do
+                            for name, def in pairs(UpgradeConfig) do
+                                if name:find(cat) and def.price and not d.Upgrades[name] then
+                                    if d.Money >= tonumber(def.price) then
+                                        fireRE(R.BuyUpgrade, name)
+                                        Stats.Upgrades = Stats.Upgrades + 1
+                                        wait(0.3)
+                                    end
                                 end
                             end
                         end
-                    end
+                    end)
                 end
             end
             wait(CONFIG.UpgradeDelay)
@@ -525,46 +592,37 @@ local function startAutoUpgrade()
 end
 
 -- ═══════════════════════════════════════
--- MODULE: AUTO TOWER (improved)
+-- MODULE: AUTO TOWER
 -- ═══════════════════════════════════════
 local function startAutoTower()
     spawn(function()
         while isAlive() do
             if State.AutoTower then
-                -- Cancel any stuck tower first
                 if R.CancelTower then
-                    pcall(function()
-                        invokeRF(R.CancelTower)
-                    end)
+                    pcall(function() invokeRF(R.CancelTower) end)
                     wait(1)
                 end
 
-                -- Equip best tower team
                 if R.EquipBestTower then
                     fireRE(R.EquipBestTower)
                     wait(1)
                 end
 
-                -- Play tower
                 if R.PlayTower then
                     local towerResult = invokeRF(R.PlayTower, CONFIG.TowerName)
 
                     if towerResult then
                         Stats.TowerRuns = Stats.TowerRuns + 1
-
-                        -- Complete floors until done
-                        local maxFloors = 200  -- safety limit
+                        local maxFloors = 200
                         for i = 1, maxFloors do
                             if not isAlive() or not State.AutoTower then break end
-
                             local floorResult = invokeRF(R.CompleteTowerFloor)
                             if not floorResult then break end
                             wait(CONFIG.TowerDelay)
                         end
                     else
-                        -- Tower gagal start, mungkin masih ada run aktif
                         if R.CancelTower then
-                            invokeRF(R.CancelTower)
+                            pcall(function() invokeRF(R.CancelTower) end)
                         end
                     end
                 end
@@ -575,7 +633,7 @@ local function startAutoTower()
 end
 
 -- ═══════════════════════════════════════
--- MODULE: AUTO CODES (toggle-based)
+-- MODULE: AUTO CODES
 -- ═══════════════════════════════════════
 local codesRedeemed = {}
 
@@ -599,7 +657,7 @@ local function startAutoCodes()
 end
 
 -- ═══════════════════════════════════════
--- MODULE: AUTO CLAIM (offline/daily/group/quests)
+-- MODULE: AUTO CLAIM
 -- ═══════════════════════════════════════
 local function startAutoClaim()
     spawn(function()
@@ -636,8 +694,7 @@ local function startAutoBoost()
 end
 
 -- ═══════════════════════════════════════
--- MODULE: AUTO SPIN (Lucky/Jackpot)
--- Uses owned spins before each roll cycle
+-- MODULE: AUTO SPIN
 -- ═══════════════════════════════════════
 local function startAutoSpin()
     spawn(function()
@@ -655,7 +712,6 @@ end
 
 -- ═══════════════════════════════════════
 -- MODULE: AUTO LEVEL SLOT
--- Level up placed units, spending max LevelShare of money
 -- ═══════════════════════════════════════
 local function startAutoLevel()
     spawn(function()
@@ -666,7 +722,6 @@ local function startAutoLevel()
                     local budget = d.Money * CONFIG.LevelShare
                     local spent = 0
 
-                    -- Level up each slot
                     local maxSlots = 15
                     pcall(function()
                         if PlotConfig and PlotConfig.GetMaxSlots then
@@ -677,10 +732,8 @@ local function startAutoLevel()
                     for slot = 1, maxSlots do
                         if not isAlive() or not State.AutoLevel then break end
                         if spent >= budget then break end
-
-                        -- Try to level up this slot
                         fireRE(R.LevelUpSlot, slot)
-                        spent = spent + 1 -- Approximate, actual cost checked server-side
+                        spent = spent + 1
                         wait(0.2)
                     end
                 end
@@ -692,7 +745,6 @@ end
 
 -- ═══════════════════════════════════════
 -- MODULE: AUTO REBIRTH STATS
--- Spend rebirth points on chosen stat
 -- ═══════════════════════════════════════
 local function startAutoStats()
     spawn(function()
@@ -709,6 +761,8 @@ end
 -- GUI
 -- ═══════════════════════════════════════
 local function createGUI()
+    print("[AnimeDice] Creating GUI...")
+
     local BG     = Color3.fromRGB(18, 18, 28)
     local BG2    = Color3.fromRGB(28, 28, 42)
     local DARK   = Color3.fromRGB(12, 12, 20)
@@ -718,17 +772,67 @@ local function createGUI()
     local WHITE  = Color3.fromRGB(255, 255, 255)
     local GRAY   = Color3.fromRGB(140, 140, 160)
 
+    -- Try syn.protect_gui or gethui for executor compatibility
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "AnimeDiceHub"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    ScreenGui.Parent = Player.PlayerGui
+
+    -- Delta / executor safe parenting
+    local guiParented = false
+
+    -- Method 1: gethui() (most executors support this)
+    if not guiParented then
+        pcall(function()
+            if gethui then
+                ScreenGui.Parent = gethui()
+                guiParented = true
+                print("[AnimeDice] GUI parented via gethui()")
+            end
+        end)
+    end
+
+    -- Method 2: syn.protect_gui (Synapse-style)
+    if not guiParented then
+        pcall(function()
+            if syn and syn.protect_gui then
+                syn.protect_gui(ScreenGui)
+                ScreenGui.Parent = Player.PlayerGui
+                guiParented = true
+                print("[AnimeDice] GUI parented via syn.protect_gui")
+            end
+        end)
+    end
+
+    -- Method 3: CoreGui
+    if not guiParented then
+        pcall(function()
+            ScreenGui.Parent = game:GetService("CoreGui")
+            guiParented = true
+            print("[AnimeDice] GUI parented to CoreGui")
+        end)
+    end
+
+    -- Method 4: PlayerGui (fallback)
+    if not guiParented then
+        pcall(function()
+            ScreenGui.Parent = Player.PlayerGui
+            guiParented = true
+            print("[AnimeDice] GUI parented to PlayerGui")
+        end)
+    end
+
+    if not guiParented then
+        warn("[AnimeDice] GAGAL parent GUI! Tidak bisa menampilkan UI.")
+        return nil
+    end
+
     _G.__ANIMEDICE_HUB_GUI = ScreenGui
 
     -- Main Frame
     local Main = Instance.new("Frame")
-    Main.Size = UDim2.new(0, 320, 0, 620)
-    Main.Position = UDim2.new(0.5, -160, 0.5, -310)
+    Main.Size = UDim2.new(0, 300, 0, 580)
+    Main.Position = UDim2.new(0.5, -150, 0.5, -290)
     Main.BackgroundColor3 = BG
     Main.BorderSizePixel = 0
     Main.Active = true
@@ -738,11 +842,12 @@ local function createGUI()
     local mc = Instance.new("UICorner", Main)
     mc.CornerRadius = UDim.new(0, 10)
     local ms = Instance.new("UIStroke", Main)
-    ms.Color = ACCENT; ms.Thickness = 2
+    ms.Color = ACCENT
+    ms.Thickness = 2
 
     -- Title
     local Title = Instance.new("Frame")
-    Title.Size = UDim2.new(1, 0, 0, 45)
+    Title.Size = UDim2.new(1, 0, 0, 42)
     Title.BackgroundColor3 = DARK
     Title.BorderSizePixel = 0
     Title.Parent = Main
@@ -752,19 +857,19 @@ local function createGUI()
     TitleText.Size = UDim2.new(1, -50, 1, 0)
     TitleText.Position = UDim2.new(0, 12, 0, 0)
     TitleText.BackgroundTransparency = 1
-    TitleText.Text = "🎲 Anime Dice AFK Hub"
+    TitleText.Text = "Anime Dice AFK Hub"
     TitleText.TextColor3 = WHITE
-    TitleText.TextSize = 16
+    TitleText.TextSize = 15
     TitleText.Font = Enum.Font.GothamBold
     TitleText.TextXAlignment = Enum.TextXAlignment.Left
     TitleText.Parent = Title
 
-    -- Minimize btn
+    -- Close/Minimize btn
     local MinBtn = Instance.new("TextButton")
     MinBtn.Size = UDim2.new(0, 28, 0, 28)
-    MinBtn.Position = UDim2.new(1, -36, 0, 8)
+    MinBtn.Position = UDim2.new(1, -36, 0, 7)
     MinBtn.BackgroundColor3 = RED
-    MinBtn.Text = "—"
+    MinBtn.Text = "X"
     MinBtn.TextColor3 = WHITE
     MinBtn.TextSize = 14
     MinBtn.Font = Enum.Font.GothamBold
@@ -774,8 +879,8 @@ local function createGUI()
 
     -- Scroll
     local Scroll = Instance.new("ScrollingFrame")
-    Scroll.Size = UDim2.new(1, -16, 1, -100)
-    Scroll.Position = UDim2.new(0, 8, 0, 50)
+    Scroll.Size = UDim2.new(1, -16, 1, -96)
+    Scroll.Position = UDim2.new(0, 8, 0, 48)
     Scroll.BackgroundTransparency = 1
     Scroll.BorderSizePixel = 0
     Scroll.ScrollBarThickness = 3
@@ -785,13 +890,13 @@ local function createGUI()
     Scroll.Parent = Main
 
     local Layout = Instance.new("UIListLayout", Scroll)
-    Layout.Padding = UDim.new(0, 5)
+    Layout.Padding = UDim.new(0, 4)
     Layout.SortOrder = Enum.SortOrder.LayoutOrder
 
     -- Status bar
     local StatusBar = Instance.new("Frame")
-    StatusBar.Size = UDim2.new(1, -16, 0, 40)
-    StatusBar.Position = UDim2.new(0, 8, 1, -46)
+    StatusBar.Size = UDim2.new(1, -16, 0, 36)
+    StatusBar.Position = UDim2.new(0, 8, 1, -42)
     StatusBar.BackgroundColor3 = DARK
     StatusBar.BorderSizePixel = 0
     StatusBar.Parent = Main
@@ -803,16 +908,16 @@ local function createGUI()
     StatusText.Position = UDim2.new(0, 8, 0, 0)
     StatusText.BackgroundTransparency = 1
     StatusText.TextColor3 = GRAY
-    StatusText.TextSize = 11
+    StatusText.TextSize = 10
     StatusText.Font = Enum.Font.GothamMedium
     StatusText.TextXAlignment = Enum.TextXAlignment.Left
     StatusText.Text = "Loading..."
     StatusText.Parent = StatusBar
 
     -- Toggle factory
-    local function addToggle(name, emoji, stateKey, order)
+    local function addToggle(name, stateKey, order)
         local F = Instance.new("Frame")
-        F.Size = UDim2.new(1, 0, 0, 36)
+        F.Size = UDim2.new(1, 0, 0, 34)
         F.BackgroundColor3 = BG2
         F.BorderSizePixel = 0
         F.LayoutOrder = order
@@ -823,7 +928,7 @@ local function createGUI()
         L.Size = UDim2.new(1, -70, 1, 0)
         L.Position = UDim2.new(0, 10, 0, 0)
         L.BackgroundTransparency = 1
-        L.Text = emoji .. "  " .. name
+        L.Text = name
         L.TextColor3 = WHITE
         L.TextSize = 13
         L.Font = Enum.Font.GothamMedium
@@ -831,8 +936,8 @@ local function createGUI()
         L.Parent = F
 
         local B = Instance.new("TextButton")
-        B.Size = UDim2.new(0, 50, 0, 24)
-        B.Position = UDim2.new(1, -58, 0.5, -12)
+        B.Size = UDim2.new(0, 50, 0, 22)
+        B.Position = UDim2.new(1, -58, 0.5, -11)
         B.BackgroundColor3 = State[stateKey] and GREEN or RED
         B.Text = State[stateKey] and "ON" or "OFF"
         B.TextColor3 = WHITE
@@ -847,62 +952,81 @@ local function createGUI()
             B.BackgroundColor3 = State[stateKey] and GREEN or RED
             B.Text = State[stateKey] and "ON" or "OFF"
 
-            -- Auto sell: update threshold saat toggle
             if stateKey == "AutoSell" and State.AutoSell and R.UpdateAutoSell then
                 fireRE(R.UpdateAutoSell, CONFIG.SellBelowRarity)
             end
         end)
     end
 
-    addToggle("Auto Roll",     "🎲", "AutoRoll",    1)
-    addToggle("Auto Sell",     "🗑️", "AutoSell",    2)
-    addToggle("Auto Collect",  "💰", "AutoCollect",  3)
-    addToggle("Auto Rebirth",  "🔄", "AutoRebirth",  4)
-    addToggle("Auto Tower",    "🏰", "AutoTower",    5)
-    addToggle("Auto Dice",     "🎯", "AutoDice",     6)
-    addToggle("Auto Upgrade",  "⬆️", "AutoUpgrade",  7)
-    addToggle("Auto Spin",     "🎰", "AutoSpin",     8)
-    addToggle("Auto Level",    "📈", "AutoLevel",    9)
-    addToggle("Auto Claim",    "🎁", "AutoClaim",   10)
-    addToggle("Auto Codes",    "📝", "AutoCodes",   11)
-    addToggle("Auto Boost",    "🚀", "AutoBoost",   12)
-    addToggle("Auto Stats",    "⭐", "AutoStats",   13)
-    addToggle("Anti-AFK",      "🛡️", "AntiAFK",     14)
+    addToggle("Auto Roll",     "AutoRoll",    1)
+    addToggle("Auto Sell",     "AutoSell",    2)
+    addToggle("Auto Collect",  "AutoCollect",  3)
+    addToggle("Auto Rebirth",  "AutoRebirth",  4)
+    addToggle("Auto Tower",    "AutoTower",    5)
+    addToggle("Auto Dice",     "AutoDice",     6)
+    addToggle("Auto Upgrade",  "AutoUpgrade",  7)
+    addToggle("Auto Spin",     "AutoSpin",     8)
+    addToggle("Auto Level",    "AutoLevel",    9)
+    addToggle("Auto Claim",    "AutoClaim",   10)
+    addToggle("Auto Codes",    "AutoCodes",   11)
+    addToggle("Auto Boost",    "AutoBoost",   12)
+    addToggle("Auto Stats",    "AutoStats",   13)
+    addToggle("Anti-AFK",      "AntiAFK",     14)
 
-    -- Minimize handler
+    -- Minimize handler — hide content, show small button
+    local minimized = false
+    local openBtn
+
+    -- Small "open" button when minimized
+    openBtn = Instance.new("TextButton")
+    openBtn.Size = UDim2.new(0, 100, 0, 36)
+    openBtn.Position = UDim2.new(0, 10, 0, 10)
+    openBtn.BackgroundColor3 = ACCENT
+    openBtn.Text = "AFK Hub"
+    openBtn.TextColor3 = WHITE
+    openBtn.TextSize = 13
+    openBtn.Font = Enum.Font.GothamBold
+    openBtn.BorderSizePixel = 0
+    openBtn.Visible = false
+    openBtn.Active = true
+    openBtn.Draggable = true
+    openBtn.Parent = ScreenGui
+    Instance.new("UICorner", openBtn).CornerRadius = UDim.new(0, 8)
+
     MinBtn.MouseButton1Click:Connect(function()
-        State.GUIVisible = not State.GUIVisible
-        Main.Visible = State.GUIVisible
+        minimized = true
+        Main.Visible = false
+        openBtn.Visible = true
     end)
 
-    -- Keyboard toggle
-    UIS.InputBegan:Connect(function(input, gp)
-        if gp then return end
-        if input.KeyCode == CONFIG.ToggleKey then
-            State.GUIVisible = not State.GUIVisible
-            Main.Visible = State.GUIVisible
-        end
+    openBtn.MouseButton1Click:Connect(function()
+        minimized = false
+        Main.Visible = true
+        openBtn.Visible = false
     end)
 
     -- Status updater
     spawn(function()
         while isAlive() do
-            local elapsed = tick() - Stats.StartTime
-            local d = getData()
-            local moneyStr = d and formatNum(d.Money) or "?"
+            pcall(function()
+                local elapsed = tick() - Stats.StartTime
+                local d = getData()
+                local moneyStr = d and formatNum(d.Money) or "?"
 
-            StatusText.Text = string.format(
-                "⏱%s | 💰%s | 🎲%s | 🗑️%s | 🔄%s",
-                formatTime(elapsed),
-                moneyStr,
-                formatNum(Stats.Rolled),
-                formatNum(Stats.Sold),
-                tostring(Stats.Rebirths)
-            )
+                StatusText.Text = string.format(
+                    "T:%s | $%s | Roll:%s | Sell:%s | RB:%s",
+                    formatTime(elapsed),
+                    moneyStr,
+                    formatNum(Stats.Rolled),
+                    formatNum(Stats.Sold),
+                    tostring(Stats.Rebirths)
+                )
+            end)
             wait(1)
         end
     end)
 
+    print("[AnimeDice] GUI created successfully!")
     return ScreenGui
 end
 
@@ -910,75 +1034,79 @@ end
 -- INITIALIZATION
 -- ═══════════════════════════════════════
 local function init()
-    print("═══════════════════════════════════════════")
-    print("  🎲 Anime Dice AFK Hub v2.0 — Starting")
-    print("═══════════════════════════════════════════")
+    print("==============================================")
+    print("  Anime Dice AFK Hub v2.1 — Initializing")
+    print("==============================================")
 
     -- Log remote status
     local found, missing = 0, 0
     for name, remote in pairs(R) do
         if remote then
             found = found + 1
-            print("  ✅ " .. name)
         else
             missing = missing + 1
-            warn("  ❌ " .. name .. " (not found)")
+            warn("  [Remote Missing] " .. name)
         end
     end
-    print(string.format("\n  Remotes: %d found, %d missing", found, missing))
+    print("  Remotes: " .. found .. " found, " .. missing .. " missing")
 
     -- Log data controller
-    if getData() then
-        local d = getData()
-        print("  ✅ DataController loaded")
-        print("  💰 Money: " .. formatNum(d.Money or 0))
-        print("  🔄 Rebirth: " .. tostring(d.Rebirth or 0))
+    local d = getData()
+    if d then
+        print("  DataController: OK")
+        print("  Money: " .. formatNum(d.Money or 0))
+        print("  Rebirth: " .. tostring(d.Rebirth or 0))
     else
-        warn("  ⚠️ DataController not available")
+        warn("  DataController: not available (some features may not work)")
     end
 
-    -- Create GUI (dibungkus pcall biar error GUI tidak menghentikan script)
-    print("[AnimeDice] Membuat GUI...")
+    -- Create GUI
     local guiOk, guiErr = pcall(createGUI)
     if not guiOk then
-        warn("[AnimeDice] Gagal buat GUI: " .. tostring(guiErr))
-    else
-        print("[AnimeDice] GUI berhasil dibuat. Tekan Right Ctrl untuk show/hide.")
+        warn("[AnimeDice] GUI Error: " .. tostring(guiErr))
+        warn("[AnimeDice] Script will continue without GUI")
     end
-    pcall(function() notify("AFK Hub", "🎲 Anime Dice AFK Hub v2.0 loaded!", 4) end)
 
-    -- Start modules
-    startAntiAFK()
-    startAutoRoll()
-    startAutoCollect()
-    startAutoSell()
-    startAutoRebirth()
-    startAutoDice()
-    startAutoUpgrade()
-    startAutoTower()
-    startAutoCodes()
-    startAutoClaim()
-    startAutoBoost()
-    startAutoSpin()
-    startAutoLevel()
-    startAutoStats()
+    pcall(function()
+        notify("AFK Hub", "Anime Dice AFK Hub v2.1 loaded!", 4)
+    end)
+
+    -- Start ALL modules
+    print("[AnimeDice] Starting modules...")
+    pcall(startAntiAFK)
+    pcall(startAutoRoll)
+    pcall(startAutoCollect)
+    pcall(startAutoSell)
+    pcall(startAutoRebirth)
+    pcall(startAutoDice)
+    pcall(startAutoUpgrade)
+    pcall(startAutoTower)
+    pcall(startAutoCodes)
+    pcall(startAutoClaim)
+    pcall(startAutoBoost)
+    pcall(startAutoSpin)
+    pcall(startAutoLevel)
+    pcall(startAutoStats)
 
     -- Respawn handler
     Player.CharacterAdded:Connect(function(char)
         Character = char
         wait(2)
-        notify("AFK Hub", "🔄 Respawn — Script tetap aktif", 2)
+        notify("AFK Hub", "Respawn — Script tetap aktif", 2)
     end)
 
-    print("\n  ✅ Semua modul aktif!")
-    print("  🎮 Toggle key: " .. CONFIG.ToggleKey.Name)
-    print("═══════════════════════════════════════════")
+    print("==============================================")
+    print("  ALL MODULES STARTED!")
+    print("  GUI should be visible on screen.")
+    print("  If no GUI, check console for errors above.")
+    print("==============================================")
 end
 
--- RUN (dibungkus pcall biar kalau error, tetap kelihatan pesannya)
-print("[AnimeDice] Script mulai dijalankan...")
+-- ═══════════════════════════════════════
+-- RUN
+-- ═══════════════════════════════════════
 local ok, err = pcall(init)
 if not ok then
-    warn("[AnimeDice] ERROR fatal saat init: " .. tostring(err))
-    warn("[AnimeDice] Kirim pesan ini ke developer biar bisa diperbaiki.")
+    warn("[AnimeDice] FATAL ERROR: " .. tostring(err))
+    warn("[AnimeDice] Send this error to the developer.")
 end

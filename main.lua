@@ -1,11 +1,11 @@
 --[[
-    ANIME DICE AFK HUB v2.2 — DELTA EXECUTOR
+    ANIME DICE AFK HUB v2.3 — DELTA EXECUTOR
     
     Copas ke Delta:
     loadstring(game:HttpGet("https://cdn.jsdelivr.net/gh/ahmdmzkiid-lgtm/animedicejek@main/main.lua", true))()
 ]]
 
-print("[AnimeDice] v2.2 Starting...")
+print("[AnimeDice] v2.3 Starting...")
 
 -- ═══ SERVICES (safe) ═══
 local Players    = game:GetService("Players")
@@ -85,29 +85,54 @@ local function notify(title, text, dur)
     pcall(function() StarterGui:SetCore("SendNotification", {Title=title or "AFK Hub", Text=text or "", Duration=dur or 3}) end)
 end
 
--- Remote helpers (defined early, R gets populated later)
+-- ═══ REMOTE HELPERS ═══
+-- TIDAK PAKAI ... (varargs) karena Delta loadstring ga support
+-- Pakai explicit arg1, arg2 saja
 local R = {}
-local function fireRE(remote, ...)
+
+local function fireRE(remote, arg1, arg2)
     if not remote then return end
-    pcall(function() remote:FireServer(...) end)
-end
-local function invokeRF(remote, ...)
-    if not remote then return nil end
-    local ok, result = pcall(function() return remote:InvokeServer(...) end)
-    return ok and result or nil
+    local ok, e = pcall(function()
+        if arg2 ~= nil then
+            remote:FireServer(arg1, arg2)
+        elseif arg1 ~= nil then
+            remote:FireServer(arg1)
+        else
+            remote:FireServer()
+        end
+    end)
+    if not ok then
+        warn("[AnimeDice] fireRE error: " .. tostring(e))
+    end
 end
 
--- Data helpers (populated later)
+local function invokeRF(remote, arg1, arg2)
+    if not remote then return nil end
+    local ok, result = pcall(function()
+        if arg2 ~= nil then
+            return remote:InvokeServer(arg1, arg2)
+        elseif arg1 ~= nil then
+            return remote:InvokeServer(arg1)
+        else
+            return remote:InvokeServer()
+        end
+    end)
+    if ok then return result end
+    return nil
+end
+
+-- ═══ DATA HELPERS ═══
 local DataController
 local function getData()
     local ok, result = pcall(function()
         if DataController and DataController.___X then return DataController.___X end
         return nil
     end)
-    return ok and result or nil
+    if ok then return result end
+    return nil
 end
 
--- Game config refs (populated later)
+-- Game config refs
 local Dice, Rebirths, PlotConfig, UpgradeConfig
 
 print("[AnimeDice] Base loaded, creating GUI...")
@@ -115,7 +140,7 @@ print("[AnimeDice] Base loaded, creating GUI...")
 -- ══════════════════════════════════════════════════
 -- GUI — dibuat PERTAMA sebelum load remote
 -- ══════════════════════════════════════════════════
-local StatusText -- reference for status updater
+local StatusText
 
 local function createGUI()
     local BG     = Color3.fromRGB(18, 18, 28)
@@ -160,7 +185,8 @@ local function createGUI()
     Main.Parent = sg
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
     local stroke = Instance.new("UIStroke", Main)
-    stroke.Color = ACCENT; stroke.Thickness = 2
+    stroke.Color = ACCENT
+    stroke.Thickness = 2
 
     -- Title bar
     local TBar = Instance.new("Frame")
@@ -174,7 +200,7 @@ local function createGUI()
     TText.Size = UDim2.new(1, -45, 1, 0)
     TText.Position = UDim2.new(0, 10, 0, 0)
     TText.BackgroundTransparency = 1
-    TText.Text = "Anime Dice AFK Hub v2.2"
+    TText.Text = "Anime Dice AFK Hub v2.3"
     TText.TextColor3 = WHITE
     TText.TextSize = 14
     TText.Font = Enum.Font.GothamBold
@@ -323,12 +349,11 @@ else
 end
 
 -- ══════════════════════════════════════════════════
--- LOAD REMOTES (setelah GUI muncul)
+-- LOAD REMOTES (setelah GUI muncul, di background)
 -- ══════════════════════════════════════════════════
 print("[AnimeDice] Loading remotes...")
 
 spawn(function()
-    -- Wait a bit for game to be ready
     wait(2)
 
     -- Find Network folder
@@ -345,7 +370,7 @@ spawn(function()
     else
         warn("[AnimeDice] Network folder NOT found!")
         if StatusText then
-            StatusText.Text = "Network not found - remotes disabled"
+            StatusText.Text = "Network not found"
         end
     end
 
@@ -360,7 +385,8 @@ spawn(function()
             end
             return node
         end)
-        return ok2 and result or nil
+        if ok2 then return result end
+        return nil
     end
 
     -- Load all remotes
@@ -424,11 +450,10 @@ spawn(function()
         warn("[AnimeDice] Framework not found")
     end
 
-    -- Update status
     if StatusText then
-        StatusText.Text = "Ready! " .. found .. " remotes loaded"
+        StatusText.Text = "Ready! " .. found .. " remotes"
     end
-    notify("AFK Hub", "Remotes loaded! " .. found .. " found, " .. missing .. " missing", 4)
+    notify("AFK Hub", found .. " remotes loaded!", 4)
 
     -- ══════════════════════════════════════════════════
     -- START ALL MODULES
@@ -437,28 +462,28 @@ spawn(function()
 
     -- Anti-AFK
     spawn(function()
-        local VU = nil
-        pcall(function() VU = game:GetService("VirtualUser") end)
-        if VU then
+        local VU2 = nil
+        pcall(function() VU2 = game:GetService("VirtualUser") end)
+        if VU2 then
             pcall(function()
                 Player.Idled:Connect(function()
                     pcall(function()
-                        VU:CaptureController()
-                        VU:ClickButton2(Vector2.new())
+                        VU2:CaptureController()
+                        VU2:ClickButton2(Vector2.new())
                     end)
                 end)
             end)
         end
 
-        local VIM = nil
-        pcall(function() VIM = game:GetService("VirtualInputManager") end)
+        local VIM2 = nil
+        pcall(function() VIM2 = game:GetService("VirtualInputManager") end)
 
         while isAlive() do
-            if State.AntiAFK and VIM then
+            if State.AntiAFK and VIM2 then
                 pcall(function()
-                    VIM:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
+                    VIM2:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
                     wait(0.1)
-                    VIM:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
+                    VIM2:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
                 end)
             end
             wait(CONFIG.AntiAFKDelay)
@@ -569,10 +594,10 @@ spawn(function()
                     local d = getData()
                     if d then
                         for _, cat in ipairs(CONFIG.UpgradeCategories) do
-                            for name, def in pairs(UpgradeConfig) do
-                                if name:find(cat) and def.price and not d.Upgrades[name] then
+                            for uname, def in pairs(UpgradeConfig) do
+                                if uname:find(cat) and def.price and not d.Upgrades[uname] then
                                     if d.Money >= tonumber(def.price) then
-                                        fireRE(R.BuyUpgrade, name)
+                                        fireRE(R.BuyUpgrade, uname)
                                         Stats.Upgrades = Stats.Upgrades + 1
                                         wait(0.3)
                                     end
@@ -679,7 +704,6 @@ spawn(function()
                 pcall(function()
                     local d = getData()
                     if d and d.Money then
-                        local budget = d.Money * CONFIG.LevelShare
                         local maxSlots = 15
                         pcall(function()
                             if PlotConfig and PlotConfig.GetMaxSlots then
@@ -727,11 +751,10 @@ spawn(function()
     end)
 
     -- Respawn handler
-    Player.CharacterAdded:Connect(function(char)
+    Player.CharacterAdded:Connect(function()
         wait(2)
         notify("AFK Hub", "Respawn - Script tetap aktif", 2)
     end)
 
     print("[AnimeDice] ALL MODULES STARTED!")
-    print("[AnimeDice] Script fully loaded!")
 end)

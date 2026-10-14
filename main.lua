@@ -1,10 +1,10 @@
 --[[
-    JAKIDICE AFK HUB v3.0 — DELTA EXECUTOR
+    JAKIDICE AFK HUB v3.1 — DELTA EXECUTOR
     
     loadstring(game:HttpGet("https://cdn.jsdelivr.net/gh/ahmdmzkiid-lgtm/animedicejek@main/main.lua", true))()
 ]]
 
-print("[JakiDice] v3.0 Starting...")
+print("[JakiDice] v3.1 Starting...")
 
 local Players    = game:GetService("Players")
 local RS         = game:GetService("ReplicatedStorage")
@@ -212,7 +212,7 @@ local function createGUI()
     TitleLabel.Size = UDim2.new(1, -60, 0, 28)
     TitleLabel.Position = UDim2.new(0, 16, 0, 6)
     TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Text = "JakiDice Hub"
+    TitleLabel.Text = "JakiDice Hub v3.1"
     TitleLabel.TextColor3 = WHITE
     TitleLabel.TextSize = 20
     TitleLabel.Font = Enum.Font.GothamBlack
@@ -352,34 +352,34 @@ local function createGUI()
     addToggle("Auto Stats",     "AutoStats",  13)
     addToggle("Anti-AFK",       "AntiAFK",    14)
 
-    -- ═══ OPEN BUTTON (saat minimize) ═══
-    local openBtn = Instance.new("TextButton")
-    openBtn.Size = UDim2.new(0, 120, 0, 40)
-    openBtn.Position = UDim2.new(0, 12, 0, 12)
-    openBtn.BackgroundColor3 = ACCENT
-    openBtn.Text = "JakiDice"
-    openBtn.TextColor3 = WHITE
-    openBtn.TextSize = 14
-    openBtn.Font = Enum.Font.GothamBold
-    openBtn.BorderSizePixel = 0
-    openBtn.Visible = false
-    openBtn.Active = true
-    openBtn.Draggable = true
-    openBtn.Parent = sg
-    Instance.new("UICorner", openBtn).CornerRadius = UDim.new(0, 10)
+    -- ═══ FLOATING ICON (saat close) ═══
+    local iconBtn = Instance.new("TextButton")
+    iconBtn.Size = UDim2.new(0, 48, 0, 48)
+    iconBtn.Position = UDim2.new(0, 10, 0.5, -24)
+    iconBtn.BackgroundColor3 = ACCENT
+    iconBtn.Text = "JD"
+    iconBtn.TextColor3 = WHITE
+    iconBtn.TextSize = 18
+    iconBtn.Font = Enum.Font.GothamBlack
+    iconBtn.BorderSizePixel = 0
+    iconBtn.Visible = false
+    iconBtn.Active = true
+    iconBtn.Draggable = true
+    iconBtn.Parent = sg
+    Instance.new("UICorner", iconBtn).CornerRadius = UDim.new(1, 0)
 
-    local openStroke = Instance.new("UIStroke", openBtn)
-    openStroke.Color = WHITE
-    openStroke.Thickness = 1
-    openStroke.Transparency = 0.5
+    local iconStroke = Instance.new("UIStroke", iconBtn)
+    iconStroke.Color = WHITE
+    iconStroke.Thickness = 2
+    iconStroke.Transparency = 0.3
 
     CloseBtn.MouseButton1Click:Connect(function()
         Main.Visible = false
-        openBtn.Visible = true
+        iconBtn.Visible = true
     end)
-    openBtn.MouseButton1Click:Connect(function()
+    iconBtn.MouseButton1Click:Connect(function()
         Main.Visible = true
-        openBtn.Visible = false
+        iconBtn.Visible = false
     end)
 
     return sg

@@ -1,20 +1,18 @@
 --[[
-    ANIME DICE AFK HUB v2.3 — DELTA EXECUTOR
+    JAKIDICE AFK HUB v3.0 — DELTA EXECUTOR
     
-    Copas ke Delta:
     loadstring(game:HttpGet("https://cdn.jsdelivr.net/gh/ahmdmzkiid-lgtm/animedicejek@main/main.lua", true))()
 ]]
 
-print("[AnimeDice] v2.3 Starting...")
+print("[JakiDice] v3.0 Starting...")
 
--- ═══ SERVICES (safe) ═══
 local Players    = game:GetService("Players")
 local RS         = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
 local Player     = Players.LocalPlayer
 
-print("[AnimeDice] Player: " .. tostring(Player))
+print("[JakiDice] Player: " .. tostring(Player))
 
 -- ═══ CONFIG ═══
 local CONFIG = {
@@ -48,12 +46,12 @@ local CONFIG = {
 }
 
 -- ═══ GENERATION GUARD ═══
-_G.__ANIMEDICE_HUB = (_G.__ANIMEDICE_HUB or 0) + 1
-local GENERATION = _G.__ANIMEDICE_HUB
-if _G.__ANIMEDICE_HUB_GUI then
-    pcall(function() _G.__ANIMEDICE_HUB_GUI:Destroy() end)
+_G.__JAKIDICE_HUB = (_G.__JAKIDICE_HUB or 0) + 1
+local GENERATION = _G.__JAKIDICE_HUB
+if _G.__JAKIDICE_HUB_GUI then
+    pcall(function() _G.__JAKIDICE_HUB_GUI:Destroy() end)
 end
-local function isAlive() return _G.__ANIMEDICE_HUB == GENERATION end
+local function isAlive() return _G.__JAKIDICE_HUB == GENERATION end
 
 -- ═══ STATE ═══
 local State = {
@@ -82,12 +80,10 @@ local function formatNum(n)
     else return tostring(math.floor(n)) end
 end
 local function notify(title, text, dur)
-    pcall(function() StarterGui:SetCore("SendNotification", {Title=title or "AFK Hub", Text=text or "", Duration=dur or 3}) end)
+    pcall(function() StarterGui:SetCore("SendNotification", {Title=title or "JakiDice", Text=text or "", Duration=dur or 3}) end)
 end
 
--- ═══ REMOTE HELPERS ═══
--- TIDAK PAKAI ... (varargs) karena Delta loadstring ga support
--- Pakai explicit arg1, arg2 saja
+-- ═══ REMOTE HELPERS (no varargs — Delta fix) ═══
 local R = {}
 
 local function fireRE(remote, arg1, arg2)
@@ -101,9 +97,6 @@ local function fireRE(remote, arg1, arg2)
             remote:FireServer()
         end
     end)
-    if not ok then
-        warn("[AnimeDice] fireRE error: " .. tostring(e))
-    end
 end
 
 local function invokeRF(remote, arg1, arg2)
@@ -132,32 +125,34 @@ local function getData()
     return nil
 end
 
--- Game config refs
 local Dice, Rebirths, PlotConfig, UpgradeConfig
 
-print("[AnimeDice] Base loaded, creating GUI...")
+print("[JakiDice] Creating GUI...")
 
 -- ══════════════════════════════════════════════════
--- GUI — dibuat PERTAMA sebelum load remote
+-- GUI — MOBILE FRIENDLY, FULL WIDTH
 -- ══════════════════════════════════════════════════
 local StatusText
 
 local function createGUI()
-    local BG     = Color3.fromRGB(18, 18, 28)
-    local BG2    = Color3.fromRGB(28, 28, 42)
-    local DARK   = Color3.fromRGB(12, 12, 20)
-    local ACCENT = Color3.fromRGB(100, 60, 255)
-    local GREEN  = Color3.fromRGB(80, 200, 120)
-    local RED    = Color3.fromRGB(200, 60, 60)
-    local WHITE  = Color3.fromRGB(255, 255, 255)
-    local GRAY   = Color3.fromRGB(140, 140, 160)
+    -- Warna tema
+    local BG       = Color3.fromRGB(15, 15, 25)
+    local BG2      = Color3.fromRGB(25, 25, 40)
+    local DARK     = Color3.fromRGB(10, 10, 18)
+    local ACCENT   = Color3.fromRGB(130, 70, 255)
+    local ACCENT2  = Color3.fromRGB(90, 50, 200)
+    local GREEN    = Color3.fromRGB(50, 205, 100)
+    local RED      = Color3.fromRGB(220, 55, 55)
+    local WHITE    = Color3.fromRGB(255, 255, 255)
+    local GRAY     = Color3.fromRGB(160, 160, 180)
+    local DIMWHITE = Color3.fromRGB(220, 220, 235)
 
     local sg = Instance.new("ScreenGui")
-    sg.Name = "AnimeDiceHub"
+    sg.Name = "JakiDiceHub"
     sg.ResetOnSpawn = false
     sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-    -- Parent GUI (try multiple methods)
+    -- Parent GUI
     local parented = false
     if not parented then pcall(function()
         if gethui then sg.Parent = gethui(); parented = true end
@@ -168,164 +163,215 @@ local function createGUI()
     if not parented then pcall(function()
         sg.Parent = Player.PlayerGui; parented = true
     end) end
-    if not parented then
-        warn("[AnimeDice] Cannot parent GUI!")
-        return nil
-    end
-    _G.__ANIMEDICE_HUB_GUI = sg
+    if not parented then return nil end
+    _G.__JAKIDICE_HUB_GUI = sg
 
-    -- Main frame
+    -- ═══ MAIN FRAME — Lebar & tinggi buat mobile ═══
     local Main = Instance.new("Frame")
-    Main.Size = UDim2.new(0, 280, 0, 540)
-    Main.Position = UDim2.new(0.5, -140, 0.5, -270)
+    Main.Size = UDim2.new(0, 340, 0, 520)
+    Main.Position = UDim2.new(0.5, -170, 0.5, -260)
     Main.BackgroundColor3 = BG
     Main.BorderSizePixel = 0
     Main.Active = true
     Main.Draggable = true
     Main.Parent = sg
-    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
+
+    -- Glow border
     local stroke = Instance.new("UIStroke", Main)
     stroke.Color = ACCENT
     stroke.Thickness = 2
+    stroke.Transparency = 0.3
 
-    -- Title bar
-    local TBar = Instance.new("Frame")
-    TBar.Size = UDim2.new(1, 0, 0, 40)
-    TBar.BackgroundColor3 = DARK
-    TBar.BorderSizePixel = 0
-    TBar.Parent = Main
-    Instance.new("UICorner", TBar).CornerRadius = UDim.new(0, 10)
+    -- Drop shadow effect (dark frame behind)
+    local Shadow = Instance.new("Frame")
+    Shadow.Size = UDim2.new(1, 8, 1, 8)
+    Shadow.Position = UDim2.new(0, -4, 0, -4)
+    Shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Shadow.BackgroundTransparency = 0.6
+    Shadow.BorderSizePixel = 0
+    Shadow.ZIndex = -1
+    Shadow.Parent = Main
+    Instance.new("UICorner", Shadow).CornerRadius = UDim.new(0, 16)
 
-    local TText = Instance.new("TextLabel")
-    TText.Size = UDim2.new(1, -45, 1, 0)
-    TText.Position = UDim2.new(0, 10, 0, 0)
-    TText.BackgroundTransparency = 1
-    TText.Text = "Anime Dice AFK Hub v2.3"
-    TText.TextColor3 = WHITE
-    TText.TextSize = 14
-    TText.Font = Enum.Font.GothamBold
-    TText.TextXAlignment = Enum.TextXAlignment.Left
-    TText.Parent = TBar
+    -- ═══ HEADER ═══
+    local Header = Instance.new("Frame")
+    Header.Size = UDim2.new(1, 0, 0, 56)
+    Header.BackgroundColor3 = DARK
+    Header.BorderSizePixel = 0
+    Header.Parent = Main
+    Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 14)
 
-    -- Close btn
+    -- Header gradient
+    local headerGrad = Instance.new("UIGradient", Header)
+    headerGrad.Color = ColorSequence.new(DARK, Color3.fromRGB(20, 15, 35))
+    headerGrad.Rotation = 90
+
+    -- Title text
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Size = UDim2.new(1, -60, 0, 28)
+    TitleLabel.Position = UDim2.new(0, 16, 0, 6)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = "JakiDice Hub"
+    TitleLabel.TextColor3 = WHITE
+    TitleLabel.TextSize = 20
+    TitleLabel.Font = Enum.Font.GothamBlack
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.Parent = Header
+
+    -- Subtitle
+    local SubLabel = Instance.new("TextLabel")
+    SubLabel.Size = UDim2.new(1, -60, 0, 18)
+    SubLabel.Position = UDim2.new(0, 16, 0, 34)
+    SubLabel.BackgroundTransparency = 1
+    SubLabel.Text = "Anime Dice AFK Automation"
+    SubLabel.TextColor3 = GRAY
+    SubLabel.TextSize = 11
+    SubLabel.Font = Enum.Font.GothamMedium
+    SubLabel.TextXAlignment = Enum.TextXAlignment.Left
+    SubLabel.Parent = Header
+
+    -- Close button
     local CloseBtn = Instance.new("TextButton")
-    CloseBtn.Size = UDim2.new(0, 26, 0, 26)
-    CloseBtn.Position = UDim2.new(1, -33, 0, 7)
+    CloseBtn.Size = UDim2.new(0, 36, 0, 36)
+    CloseBtn.Position = UDim2.new(1, -46, 0, 10)
     CloseBtn.BackgroundColor3 = RED
     CloseBtn.Text = "X"
     CloseBtn.TextColor3 = WHITE
-    CloseBtn.TextSize = 13
+    CloseBtn.TextSize = 16
     CloseBtn.Font = Enum.Font.GothamBold
     CloseBtn.BorderSizePixel = 0
-    CloseBtn.Parent = TBar
-    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
+    CloseBtn.Parent = Header
+    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
 
-    -- Scroll area
+    -- ═══ SCROLL AREA ═══
     local Scroll = Instance.new("ScrollingFrame")
-    Scroll.Size = UDim2.new(1, -12, 1, -88)
-    Scroll.Position = UDim2.new(0, 6, 0, 44)
+    Scroll.Size = UDim2.new(1, -20, 1, -120)
+    Scroll.Position = UDim2.new(0, 10, 0, 62)
     Scroll.BackgroundTransparency = 1
     Scroll.BorderSizePixel = 0
-    Scroll.ScrollBarThickness = 3
+    Scroll.ScrollBarThickness = 4
     Scroll.ScrollBarImageColor3 = ACCENT
     Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
     Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
     Scroll.Parent = Main
 
     local Layout = Instance.new("UIListLayout", Scroll)
-    Layout.Padding = UDim.new(0, 4)
+    Layout.Padding = UDim.new(0, 6)
     Layout.SortOrder = Enum.SortOrder.LayoutOrder
 
-    -- Status bar
+    -- ═══ STATUS BAR ═══
     local SBar = Instance.new("Frame")
-    SBar.Size = UDim2.new(1, -12, 0, 34)
-    SBar.Position = UDim2.new(0, 6, 1, -40)
+    SBar.Size = UDim2.new(1, -20, 0, 44)
+    SBar.Position = UDim2.new(0, 10, 1, -52)
     SBar.BackgroundColor3 = DARK
     SBar.BorderSizePixel = 0
     SBar.Parent = Main
-    Instance.new("UICorner", SBar).CornerRadius = UDim.new(0, 6)
+    Instance.new("UICorner", SBar).CornerRadius = UDim.new(0, 8)
+
+    -- Status gradient
+    local sGrad = Instance.new("UIGradient", SBar)
+    sGrad.Color = ColorSequence.new(DARK, Color3.fromRGB(18, 14, 30))
+    sGrad.Rotation = 0
 
     StatusText = Instance.new("TextLabel")
-    StatusText.Size = UDim2.new(1, -10, 1, 0)
-    StatusText.Position = UDim2.new(0, 6, 0, 0)
+    StatusText.Size = UDim2.new(1, -16, 1, 0)
+    StatusText.Position = UDim2.new(0, 8, 0, 0)
     StatusText.BackgroundTransparency = 1
     StatusText.TextColor3 = GRAY
-    StatusText.TextSize = 10
+    StatusText.TextSize = 12
     StatusText.Font = Enum.Font.GothamMedium
     StatusText.TextXAlignment = Enum.TextXAlignment.Left
     StatusText.Text = "Loading remotes..."
     StatusText.Parent = SBar
 
-    -- Toggle factory
-    local function addToggle(name, stateKey, order)
-        local F = Instance.new("Frame")
-        F.Size = UDim2.new(1, 0, 0, 32)
-        F.BackgroundColor3 = BG2
-        F.BorderSizePixel = 0
-        F.LayoutOrder = order
-        F.Parent = Scroll
-        Instance.new("UICorner", F).CornerRadius = UDim.new(0, 7)
+    -- ═══ TOGGLE FACTORY ═══
+    local function addToggle(displayName, stateKey, order)
+        local Row = Instance.new("Frame")
+        Row.Size = UDim2.new(1, 0, 0, 42)
+        Row.BackgroundColor3 = BG2
+        Row.BorderSizePixel = 0
+        Row.LayoutOrder = order
+        Row.Parent = Scroll
+        Instance.new("UICorner", Row).CornerRadius = UDim.new(0, 10)
 
-        local L = Instance.new("TextLabel")
-        L.Size = UDim2.new(1, -65, 1, 0)
-        L.Position = UDim2.new(0, 10, 0, 0)
-        L.BackgroundTransparency = 1
-        L.Text = name
-        L.TextColor3 = WHITE
-        L.TextSize = 12
-        L.Font = Enum.Font.GothamMedium
-        L.TextXAlignment = Enum.TextXAlignment.Left
-        L.Parent = F
+        -- Subtle left accent bar
+        local AccentBar = Instance.new("Frame")
+        AccentBar.Size = UDim2.new(0, 4, 0, 28)
+        AccentBar.Position = UDim2.new(0, 0, 0.5, -14)
+        AccentBar.BackgroundColor3 = State[stateKey] and GREEN or ACCENT2
+        AccentBar.BorderSizePixel = 0
+        AccentBar.Parent = Row
+        Instance.new("UICorner", AccentBar).CornerRadius = UDim.new(0, 2)
 
-        local B = Instance.new("TextButton")
-        B.Size = UDim2.new(0, 46, 0, 22)
-        B.Position = UDim2.new(1, -54, 0.5, -11)
-        B.BackgroundColor3 = State[stateKey] and GREEN or RED
-        B.Text = State[stateKey] and "ON" or "OFF"
-        B.TextColor3 = WHITE
-        B.TextSize = 11
-        B.Font = Enum.Font.GothamBold
-        B.BorderSizePixel = 0
-        B.Parent = F
-        Instance.new("UICorner", B).CornerRadius = UDim.new(0, 5)
+        -- Label
+        local Label = Instance.new("TextLabel")
+        Label.Size = UDim2.new(1, -90, 1, 0)
+        Label.Position = UDim2.new(0, 16, 0, 0)
+        Label.BackgroundTransparency = 1
+        Label.Text = displayName
+        Label.TextColor3 = DIMWHITE
+        Label.TextSize = 14
+        Label.Font = Enum.Font.GothamSemibold
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+        Label.Parent = Row
 
-        B.MouseButton1Click:Connect(function()
+        -- Toggle button
+        local Btn = Instance.new("TextButton")
+        Btn.Size = UDim2.new(0, 60, 0, 28)
+        Btn.Position = UDim2.new(1, -72, 0.5, -14)
+        Btn.BackgroundColor3 = State[stateKey] and GREEN or RED
+        Btn.Text = State[stateKey] and "ON" or "OFF"
+        Btn.TextColor3 = WHITE
+        Btn.TextSize = 13
+        Btn.Font = Enum.Font.GothamBold
+        Btn.BorderSizePixel = 0
+        Btn.Parent = Row
+        Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 7)
+
+        Btn.MouseButton1Click:Connect(function()
             State[stateKey] = not State[stateKey]
-            B.BackgroundColor3 = State[stateKey] and GREEN or RED
-            B.Text = State[stateKey] and "ON" or "OFF"
+            Btn.BackgroundColor3 = State[stateKey] and GREEN or RED
+            Btn.Text = State[stateKey] and "ON" or "OFF"
+            AccentBar.BackgroundColor3 = State[stateKey] and GREEN or ACCENT2
         end)
     end
 
-    addToggle("Auto Roll",    "AutoRoll",    1)
-    addToggle("Auto Sell",    "AutoSell",    2)
-    addToggle("Auto Collect", "AutoCollect", 3)
-    addToggle("Auto Rebirth", "AutoRebirth", 4)
-    addToggle("Auto Tower",   "AutoTower",   5)
-    addToggle("Auto Dice",    "AutoDice",    6)
-    addToggle("Auto Upgrade", "AutoUpgrade", 7)
-    addToggle("Auto Spin",    "AutoSpin",    8)
-    addToggle("Auto Level",   "AutoLevel",   9)
-    addToggle("Auto Claim",   "AutoClaim",  10)
-    addToggle("Auto Codes",   "AutoCodes",  11)
-    addToggle("Auto Boost",   "AutoBoost",  12)
-    addToggle("Auto Stats",   "AutoStats",  13)
-    addToggle("Anti-AFK",     "AntiAFK",    14)
+    addToggle("Auto Roll",      "AutoRoll",    1)
+    addToggle("Auto Collect",   "AutoCollect", 2)
+    addToggle("Auto Sell",      "AutoSell",    3)
+    addToggle("Auto Rebirth",   "AutoRebirth", 4)
+    addToggle("Auto Tower",     "AutoTower",   5)
+    addToggle("Auto Dice",      "AutoDice",    6)
+    addToggle("Auto Upgrade",   "AutoUpgrade", 7)
+    addToggle("Auto Spin",      "AutoSpin",    8)
+    addToggle("Auto Level",     "AutoLevel",   9)
+    addToggle("Auto Claim",     "AutoClaim",  10)
+    addToggle("Auto Codes",     "AutoCodes",  11)
+    addToggle("Auto Boost",     "AutoBoost",  12)
+    addToggle("Auto Stats",     "AutoStats",  13)
+    addToggle("Anti-AFK",       "AntiAFK",    14)
 
-    -- Open/close button
+    -- ═══ OPEN BUTTON (saat minimize) ═══
     local openBtn = Instance.new("TextButton")
-    openBtn.Size = UDim2.new(0, 90, 0, 32)
-    openBtn.Position = UDim2.new(0, 8, 0, 8)
+    openBtn.Size = UDim2.new(0, 120, 0, 40)
+    openBtn.Position = UDim2.new(0, 12, 0, 12)
     openBtn.BackgroundColor3 = ACCENT
-    openBtn.Text = "AFK Hub"
+    openBtn.Text = "JakiDice"
     openBtn.TextColor3 = WHITE
-    openBtn.TextSize = 12
+    openBtn.TextSize = 14
     openBtn.Font = Enum.Font.GothamBold
     openBtn.BorderSizePixel = 0
     openBtn.Visible = false
     openBtn.Active = true
     openBtn.Draggable = true
     openBtn.Parent = sg
-    Instance.new("UICorner", openBtn).CornerRadius = UDim.new(0, 8)
+    Instance.new("UICorner", openBtn).CornerRadius = UDim.new(0, 10)
+
+    local openStroke = Instance.new("UIStroke", openBtn)
+    openStroke.Color = WHITE
+    openStroke.Thickness = 1
+    openStroke.Transparency = 0.5
 
     CloseBtn.MouseButton1Click:Connect(function()
         Main.Visible = false
@@ -339,24 +385,21 @@ local function createGUI()
     return sg
 end
 
--- CREATE GUI NOW
+-- CREATE GUI
 local guiOk, guiErr = pcall(createGUI)
 if guiOk then
-    print("[AnimeDice] GUI created!")
-    notify("AFK Hub", "GUI loaded! Sedang load remotes...", 3)
+    print("[JakiDice] GUI created!")
+    notify("JakiDice", "GUI loaded! Loading remotes...", 3)
 else
-    warn("[AnimeDice] GUI error: " .. tostring(guiErr))
+    warn("[JakiDice] GUI error: " .. tostring(guiErr))
 end
 
 -- ══════════════════════════════════════════════════
--- LOAD REMOTES (setelah GUI muncul, di background)
+-- LOAD REMOTES (background, setelah GUI muncul)
 -- ══════════════════════════════════════════════════
-print("[AnimeDice] Loading remotes...")
-
 spawn(function()
     wait(2)
 
-    -- Find Network folder
     local Network = nil
     pcall(function()
         Network = RS:FindFirstChild("Network")
@@ -366,15 +409,12 @@ spawn(function()
     end)
 
     if Network then
-        print("[AnimeDice] Network folder found!")
+        print("[JakiDice] Network found!")
     else
-        warn("[AnimeDice] Network folder NOT found!")
-        if StatusText then
-            StatusText.Text = "Network not found"
-        end
+        warn("[JakiDice] Network NOT found!")
+        if StatusText then StatusText.Text = "Network not found" end
     end
 
-    -- Helper to find remote
     local function svc(path)
         if not Network then return nil end
         local ok2, result = pcall(function()
@@ -389,76 +429,66 @@ spawn(function()
         return nil
     end
 
-    -- Load all remotes
     pcall(function()
-        R.RollDice        = svc("RollService.RF.RollDice")
-        R.SetAutoRoll     = svc("RollService.RE.SetAutoRoll")
-        R.EquipBest       = svc("PlotService.RE.EquipBest")
-        R.CollectBalance  = svc("PlotService.RE.CollectBalance")
-        R.LevelUpSlot     = svc("PlotService.RE.LevelUpSlot")
-        R.InteractSlot    = svc("PlotService.RE.InteractSlot")
-        R.BuyDice         = svc("DiceShopService.RE.BuyDice")
-        R.EquipDice       = svc("DiceShopService.RE.EquipDice")
-        R.Rebirth         = svc("RebirthService.RE.Rebirth")
-        R.AddStat         = svc("RebirthService.RE.AddStat")
-        R.SellInventory   = svc("SellService.RF.SellInventory")
-        R.UpdateAutoSell  = svc("SellService.RE.UpdateAutoSell")
-        R.BuyUpgrade      = svc("RE.BuyUpgrade")
-        R.RedeemCode      = svc("CodesService.RE.RedeemCode") or svc("MonetizationService.RE.RedeemCode")
-        R.PlayTower       = svc("Towers.RF.PlayTower")
+        R.RollDice           = svc("RollService.RF.RollDice")
+        R.SetAutoRoll        = svc("RollService.RE.SetAutoRoll")
+        R.EquipBest          = svc("PlotService.RE.EquipBest")
+        R.CollectBalance     = svc("PlotService.RE.CollectBalance")
+        R.LevelUpSlot        = svc("PlotService.RE.LevelUpSlot")
+        R.InteractSlot       = svc("PlotService.RE.InteractSlot")
+        R.BuyDice            = svc("DiceShopService.RE.BuyDice")
+        R.EquipDice          = svc("DiceShopService.RE.EquipDice")
+        R.Rebirth            = svc("RebirthService.RE.Rebirth")
+        R.AddStat            = svc("RebirthService.RE.AddStat")
+        R.SellInventory      = svc("SellService.RF.SellInventory")
+        R.UpdateAutoSell     = svc("SellService.RE.UpdateAutoSell")
+        R.BuyUpgrade         = svc("RE.BuyUpgrade")
+        R.RedeemCode         = svc("CodesService.RE.RedeemCode") or svc("MonetizationService.RE.RedeemCode")
+        R.PlayTower          = svc("Towers.RF.PlayTower")
         R.CompleteTowerFloor = svc("Towers.RF.CompleteTowerFloor")
-        R.CancelTower     = svc("Towers.RF.CancelTower")
-        R.EquipBestTower  = svc("Towers.RE.EquipBestTowerTeam")
-        R.ClaimOffline    = svc("OfflineEarningsService.RE.Claim")
-        R.ClaimDaily      = svc("DailyRewardService.RE.Claim")
-        R.ClaimGroup      = svc("GroupRewardService.RE.Claim")
-        R.GradeRoll       = svc("GradeService.RE.Roll")
-        R.TraitRoll       = svc("TraitService.RE.Roll")
-        R.BoostUse        = svc("BoostService.RE.Use")
-        R.UseSpin         = svc("SpinService.RE.Use")
-        R.Fuse            = svc("FusingService.RE.Fuse")
-        R.QuestClaim      = svc("QuestService.RE.Claim")
-        R.QuestBuy        = svc("QuestService.RE.Buy")
+        R.CancelTower        = svc("Towers.RF.CancelTower")
+        R.EquipBestTower     = svc("Towers.RE.EquipBestTowerTeam")
+        R.ClaimOffline       = svc("OfflineEarningsService.RE.Claim")
+        R.ClaimDaily         = svc("DailyRewardService.RE.Claim")
+        R.ClaimGroup         = svc("GroupRewardService.RE.Claim")
+        R.GradeRoll          = svc("GradeService.RE.Roll")
+        R.TraitRoll          = svc("TraitService.RE.Roll")
+        R.BoostUse           = svc("BoostService.RE.Use")
+        R.UseSpin            = svc("SpinService.RE.Use")
+        R.Fuse               = svc("FusingService.RE.Fuse")
+        R.QuestClaim         = svc("QuestService.RE.Claim")
+        R.QuestBuy           = svc("QuestService.RE.Buy")
     end)
 
-    -- Count remotes
     local found, missing = 0, 0
-    for name, remote in pairs(R) do
-        if remote then found = found + 1
-        else missing = missing + 1 end
+    for k, v in pairs(R) do
+        if v then found = found + 1 else missing = missing + 1 end
     end
-    print("[AnimeDice] Remotes: " .. found .. " found, " .. missing .. " missing")
+    print("[JakiDice] Remotes: " .. found .. " found, " .. missing .. " missing")
 
-    -- Load Framework + DataController
+    -- Framework + Data
     local Framework = nil
     pcall(function()
         Framework = RS:FindFirstChild("Framework")
-        if not Framework then
-            Framework = RS:WaitForChild("Framework", 5)
-        end
+        if not Framework then Framework = RS:WaitForChild("Framework", 5) end
     end)
 
     if Framework then
-        print("[AnimeDice] Framework found!")
         pcall(function() DataController = require(Framework.Features.Data.DataController) end)
-        pcall(function() Dice         = require(Framework.Features.Rolling.Dice) end)
-        pcall(function() Rebirths     = require(Framework.Features.Rebirth.Rebirths) end)
-        pcall(function() PlotConfig   = require(Framework.Features.Plot.PlotConfig) end)
-        pcall(function() UpgradeConfig = require(Framework.Features.Upgrades.Upgrades) end)
-        print("[AnimeDice] Game configs loaded")
-    else
-        warn("[AnimeDice] Framework not found")
+        pcall(function() Dice           = require(Framework.Features.Rolling.Dice) end)
+        pcall(function() Rebirths       = require(Framework.Features.Rebirth.Rebirths) end)
+        pcall(function() PlotConfig     = require(Framework.Features.Plot.PlotConfig) end)
+        pcall(function() UpgradeConfig  = require(Framework.Features.Upgrades.Upgrades) end)
     end
 
     if StatusText then
-        StatusText.Text = "Ready! " .. found .. " remotes"
+        StatusText.Text = found .. " remotes ready"
     end
-    notify("AFK Hub", found .. " remotes loaded!", 4)
+    notify("JakiDice", found .. " remotes loaded!", 3)
 
-    -- ══════════════════════════════════════════════════
-    -- START ALL MODULES
-    -- ══════════════════════════════════════════════════
-    print("[AnimeDice] Starting modules...")
+    -- ══════════════════════════════════════
+    -- MODULES
+    -- ══════════════════════════════════════
 
     -- Anti-AFK
     spawn(function()
@@ -474,10 +504,8 @@ spawn(function()
                 end)
             end)
         end
-
         local VIM2 = nil
         pcall(function() VIM2 = game:GetService("VirtualInputManager") end)
-
         while isAlive() do
             if State.AntiAFK and VIM2 then
                 pcall(function()
@@ -740,21 +768,20 @@ spawn(function()
                     local elapsed = tick() - Stats.StartTime
                     local d = getData()
                     local money = d and formatNum(d.Money) or "?"
-                    StatusText.Text = string.format("T:%s $%s R:%s S:%s RB:%s",
+                    StatusText.Text = string.format("Time: %s | Money: %s | Rolls: %s | Sells: %s",
                         formatTime(elapsed), money,
-                        formatNum(Stats.Rolled), formatNum(Stats.Sold),
-                        tostring(Stats.Rebirths))
+                        formatNum(Stats.Rolled), formatNum(Stats.Sold))
                 end
             end)
             wait(1)
         end
     end)
 
-    -- Respawn handler
+    -- Respawn
     Player.CharacterAdded:Connect(function()
         wait(2)
-        notify("AFK Hub", "Respawn - Script tetap aktif", 2)
+        notify("JakiDice", "Respawn - Script tetap aktif", 2)
     end)
 
-    print("[AnimeDice] ALL MODULES STARTED!")
+    print("[JakiDice] ALL MODULES STARTED!")
 end)

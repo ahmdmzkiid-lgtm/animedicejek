@@ -115,7 +115,12 @@ local RunService        = game:GetService("RunService")
 local StarterGui        = game:GetService("StarterGui")
 
 local Player    = Players.LocalPlayer
-local Character = Player.Character or Player.CharacterAdded:Wait()
+-- PENTING: jangan :Wait() tanpa batas — bisa nyangkut selamanya kalau
+-- karakter belum spawn saat Execute (bikin "ga terjadi apa-apa").
+local Character = Player.Character
+if not Character then
+    Character = Player.CharacterAdded:Wait()
+end
 
 -- ═══════════════════════════════════════
 -- GENERATION GUARD (safe re-execute)
@@ -167,8 +172,17 @@ local Stats = {
 -- ═══════════════════════════════════════
 -- REMOTE SETUP
 -- ═══════════════════════════════════════
-local Network   = RS:WaitForChild("Network", 15)
-local Framework = RS:WaitForChild("Framework", 15)
+local Network   = RS:WaitForChild("Network", 5)
+local Framework = RS:WaitForChild("Framework", 5)
+
+if not Network then
+    warn("[AnimeDice] Folder 'ReplicatedStorage.Network' tidak ditemukan!")
+    warn("  Script tetap jalan & GUI muncul, tapi semua remote akan kosong.")
+    warn("  Kemungkinan: nama folder beda, atau kamu Execute sebelum game load.")
+end
+if not Framework then
+    warn("[AnimeDice] Folder 'ReplicatedStorage.Framework' tidak ditemukan!")
+end
 
 -- Helper: navigate nested path under Network
 local function svc(path)
@@ -923,9 +937,15 @@ local function init()
         warn("  ⚠️ DataController not available")
     end
 
-    -- Create GUI
-    createGUI()
-    notify("AFK Hub", "🎲 Anime Dice AFK Hub v2.0 loaded!", 4)
+    -- Create GUI (dibungkus pcall biar error GUI tidak menghentikan script)
+    print("[AnimeDice] Membuat GUI...")
+    local guiOk, guiErr = pcall(createGUI)
+    if not guiOk then
+        warn("[AnimeDice] Gagal buat GUI: " .. tostring(guiErr))
+    else
+        print("[AnimeDice] GUI berhasil dibuat. Tekan Right Ctrl untuk show/hide.")
+    end
+    pcall(function() notify("AFK Hub", "🎲 Anime Dice AFK Hub v2.0 loaded!", 4) end)
 
     -- Start modules
     startAntiAFK()
@@ -955,5 +975,10 @@ local function init()
     print("═══════════════════════════════════════════")
 end
 
--- RUN
-init()
+-- RUN (dibungkus pcall biar kalau error, tetap kelihatan pesannya)
+print("[AnimeDice] Script mulai dijalankan...")
+local ok, err = pcall(init)
+if not ok then
+    warn("[AnimeDice] ERROR fatal saat init: " .. tostring(err))
+    warn("[AnimeDice] Kirim pesan ini ke developer biar bisa diperbaiki.")
+end

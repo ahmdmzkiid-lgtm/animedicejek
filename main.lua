@@ -1,18 +1,16 @@
 --[[
-    JAKIDICE AFK HUB v3.1 — DELTA EXECUTOR
+    JAKIDICE AFK HUB v3.2 — DELTA EXECUTOR
     
     loadstring(game:HttpGet("https://cdn.jsdelivr.net/gh/ahmdmzkiid-lgtm/animedicejek@main/main.lua", true))()
 ]]
 
-print("[JakiDice] v3.1 Starting...")
+print("[JakiDice] v3.2 Starting...")
 
 local Players    = game:GetService("Players")
 local RS         = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
 local Player     = Players.LocalPlayer
-
-print("[JakiDice] Player: " .. tostring(Player))
 
 -- ═══ CONFIG ═══
 local CONFIG = {
@@ -83,12 +81,11 @@ local function notify(title, text, dur)
     pcall(function() StarterGui:SetCore("SendNotification", {Title=title or "JakiDice", Text=text or "", Duration=dur or 3}) end)
 end
 
--- ═══ REMOTE HELPERS (no varargs — Delta fix) ═══
+-- ═══ REMOTE HELPERS (no varargs) ═══
 local R = {}
-
 local function fireRE(remote, arg1, arg2)
     if not remote then return end
-    local ok, e = pcall(function()
+    pcall(function()
         if arg2 ~= nil then
             remote:FireServer(arg1, arg2)
         elseif arg1 ~= nil then
@@ -98,7 +95,6 @@ local function fireRE(remote, arg1, arg2)
         end
     end)
 end
-
 local function invokeRF(remote, arg1, arg2)
     if not remote then return nil end
     local ok, result = pcall(function()
@@ -124,18 +120,14 @@ local function getData()
     if ok then return result end
     return nil
 end
-
 local Dice, Rebirths, PlotConfig, UpgradeConfig
 
-print("[JakiDice] Creating GUI...")
-
 -- ══════════════════════════════════════════════════
--- GUI — MOBILE FRIENDLY, FULL WIDTH
+-- GUI — TAB SYSTEM, MOBILE FRIENDLY
 -- ══════════════════════════════════════════════════
 local StatusText
 
 local function createGUI()
-    -- Warna tema
     local BG       = Color3.fromRGB(15, 15, 25)
     local BG2      = Color3.fromRGB(25, 25, 40)
     local DARK     = Color3.fromRGB(10, 10, 18)
@@ -146,13 +138,15 @@ local function createGUI()
     local WHITE    = Color3.fromRGB(255, 255, 255)
     local GRAY     = Color3.fromRGB(160, 160, 180)
     local DIMWHITE = Color3.fromRGB(220, 220, 235)
+    local TABBG    = Color3.fromRGB(20, 18, 32)
+    local TABACT   = Color3.fromRGB(130, 70, 255)
+    local TABINACT = Color3.fromRGB(35, 32, 55)
 
     local sg = Instance.new("ScreenGui")
     sg.Name = "JakiDiceHub"
     sg.ResetOnSpawn = false
     sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-    -- Parent GUI
     local parented = false
     if not parented then pcall(function()
         if gethui then sg.Parent = gethui(); parented = true end
@@ -166,147 +160,199 @@ local function createGUI()
     if not parented then return nil end
     _G.__JAKIDICE_HUB_GUI = sg
 
-    -- ═══ MAIN FRAME — Lebar & tinggi buat mobile ═══
+    -- ═══ MAIN FRAME ═══
     local Main = Instance.new("Frame")
-    Main.Size = UDim2.new(0, 340, 0, 520)
-    Main.Position = UDim2.new(0.5, -170, 0.5, -260)
+    Main.Size = UDim2.new(0, 340, 0, 400)
+    Main.Position = UDim2.new(0.5, -170, 0.5, -200)
     Main.BackgroundColor3 = BG
     Main.BorderSizePixel = 0
     Main.Active = true
     Main.Draggable = true
     Main.Parent = sg
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
-
-    -- Glow border
     local stroke = Instance.new("UIStroke", Main)
     stroke.Color = ACCENT
     stroke.Thickness = 2
     stroke.Transparency = 0.3
 
-    -- Drop shadow effect (dark frame behind)
-    local Shadow = Instance.new("Frame")
-    Shadow.Size = UDim2.new(1, 8, 1, 8)
-    Shadow.Position = UDim2.new(0, -4, 0, -4)
-    Shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    Shadow.BackgroundTransparency = 0.6
-    Shadow.BorderSizePixel = 0
-    Shadow.ZIndex = -1
-    Shadow.Parent = Main
-    Instance.new("UICorner", Shadow).CornerRadius = UDim.new(0, 16)
-
     -- ═══ HEADER ═══
     local Header = Instance.new("Frame")
-    Header.Size = UDim2.new(1, 0, 0, 56)
+    Header.Size = UDim2.new(1, 0, 0, 50)
     Header.BackgroundColor3 = DARK
     Header.BorderSizePixel = 0
     Header.Parent = Main
     Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 14)
+    local hGrad = Instance.new("UIGradient", Header)
+    hGrad.Color = ColorSequence.new(DARK, Color3.fromRGB(20, 15, 35))
+    hGrad.Rotation = 90
 
-    -- Header gradient
-    local headerGrad = Instance.new("UIGradient", Header)
-    headerGrad.Color = ColorSequence.new(DARK, Color3.fromRGB(20, 15, 35))
-    headerGrad.Rotation = 90
-
-    -- Title text
     local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(1, -60, 0, 28)
-    TitleLabel.Position = UDim2.new(0, 16, 0, 6)
+    TitleLabel.Size = UDim2.new(1, -55, 0, 24)
+    TitleLabel.Position = UDim2.new(0, 14, 0, 5)
     TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Text = "JakiDice Hub v3.1"
+    TitleLabel.Text = "JakiDice Hub"
     TitleLabel.TextColor3 = WHITE
-    TitleLabel.TextSize = 20
+    TitleLabel.TextSize = 18
     TitleLabel.Font = Enum.Font.GothamBlack
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = Header
 
-    -- Subtitle
     local SubLabel = Instance.new("TextLabel")
-    SubLabel.Size = UDim2.new(1, -60, 0, 18)
-    SubLabel.Position = UDim2.new(0, 16, 0, 34)
+    SubLabel.Size = UDim2.new(1, -55, 0, 16)
+    SubLabel.Position = UDim2.new(0, 14, 0, 30)
     SubLabel.BackgroundTransparency = 1
     SubLabel.Text = "Anime Dice AFK Automation"
     SubLabel.TextColor3 = GRAY
-    SubLabel.TextSize = 11
+    SubLabel.TextSize = 10
     SubLabel.Font = Enum.Font.GothamMedium
     SubLabel.TextXAlignment = Enum.TextXAlignment.Left
     SubLabel.Parent = Header
 
-    -- Close button
     local CloseBtn = Instance.new("TextButton")
-    CloseBtn.Size = UDim2.new(0, 36, 0, 36)
-    CloseBtn.Position = UDim2.new(1, -46, 0, 10)
+    CloseBtn.Size = UDim2.new(0, 32, 0, 32)
+    CloseBtn.Position = UDim2.new(1, -42, 0, 9)
     CloseBtn.BackgroundColor3 = RED
     CloseBtn.Text = "X"
     CloseBtn.TextColor3 = WHITE
-    CloseBtn.TextSize = 16
+    CloseBtn.TextSize = 15
     CloseBtn.Font = Enum.Font.GothamBold
     CloseBtn.BorderSizePixel = 0
     CloseBtn.Parent = Header
     Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
 
-    -- ═══ SCROLL AREA ═══
-    local Scroll = Instance.new("ScrollingFrame")
-    Scroll.Size = UDim2.new(1, -20, 1, -120)
-    Scroll.Position = UDim2.new(0, 10, 0, 62)
-    Scroll.BackgroundTransparency = 1
-    Scroll.BorderSizePixel = 0
-    Scroll.ScrollBarThickness = 4
-    Scroll.ScrollBarImageColor3 = ACCENT
-    Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-    Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    Scroll.Parent = Main
+    -- ═══ TAB BAR ═══
+    local TabBar = Instance.new("Frame")
+    TabBar.Size = UDim2.new(1, -16, 0, 34)
+    TabBar.Position = UDim2.new(0, 8, 0, 54)
+    TabBar.BackgroundColor3 = TABBG
+    TabBar.BorderSizePixel = 0
+    TabBar.Parent = Main
+    Instance.new("UICorner", TabBar).CornerRadius = UDim.new(0, 8)
 
-    local Layout = Instance.new("UIListLayout", Scroll)
-    Layout.Padding = UDim.new(0, 6)
-    Layout.SortOrder = Enum.SortOrder.LayoutOrder
+    local TabLayout = Instance.new("UIListLayout", TabBar)
+    TabLayout.FillDirection = Enum.FillDirection.Horizontal
+    TabLayout.Padding = UDim.new(0, 3)
+    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    local tabPad = Instance.new("UIPadding", TabBar)
+    tabPad.PaddingLeft = UDim.new(0, 3)
+    tabPad.PaddingTop = UDim.new(0, 3)
+
+    -- ═══ CONTENT PAGES (satu per tab) ═══
+    local pages = {}
+    local tabButtons = {}
+
+    local function createPage()
+        local page = Instance.new("ScrollingFrame")
+        page.Size = UDim2.new(1, -16, 1, -140)
+        page.Position = UDim2.new(0, 8, 0, 92)
+        page.BackgroundTransparency = 1
+        page.BorderSizePixel = 0
+        page.ScrollBarThickness = 3
+        page.ScrollBarImageColor3 = ACCENT
+        page.CanvasSize = UDim2.new(0, 0, 0, 0)
+        page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        page.Visible = false
+        page.Parent = Main
+
+        local layout = Instance.new("UIListLayout", page)
+        layout.Padding = UDim.new(0, 5)
+        layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+        return page
+    end
+
+    -- Bikin 4 halaman
+    local pageMain  = createPage()
+    local pageFarm  = createPage()
+    local pageExtra = createPage()
+    local pageMisc  = createPage()
+
+    pages = {pageMain, pageFarm, pageExtra, pageMisc}
+    local tabNames = {"Main", "Farm", "Extra", "Misc"}
+    local activeTab = 1
+
+    local function switchTab(idx)
+        activeTab = idx
+        for i, p in ipairs(pages) do
+            p.Visible = (i == idx)
+        end
+        for i, btn in ipairs(tabButtons) do
+            if i == idx then
+                btn.BackgroundColor3 = TABACT
+                btn.TextColor3 = WHITE
+            else
+                btn.BackgroundColor3 = TABINACT
+                btn.TextColor3 = GRAY
+            end
+        end
+    end
+
+    -- Bikin tab buttons
+    for i, name in ipairs(tabNames) do
+        local tb = Instance.new("TextButton")
+        tb.Size = UDim2.new(0, 78, 0, 28)
+        tb.BackgroundColor3 = (i == 1) and TABACT or TABINACT
+        tb.Text = name
+        tb.TextColor3 = (i == 1) and WHITE or GRAY
+        tb.TextSize = 12
+        tb.Font = Enum.Font.GothamBold
+        tb.BorderSizePixel = 0
+        tb.LayoutOrder = i
+        tb.Parent = TabBar
+        Instance.new("UICorner", tb).CornerRadius = UDim.new(0, 6)
+
+        local tabIdx = i
+        tb.MouseButton1Click:Connect(function()
+            switchTab(tabIdx)
+        end)
+
+        table.insert(tabButtons, tb)
+    end
+
+    -- Show first tab
+    pageMain.Visible = true
 
     -- ═══ STATUS BAR ═══
     local SBar = Instance.new("Frame")
-    SBar.Size = UDim2.new(1, -20, 0, 44)
-    SBar.Position = UDim2.new(0, 10, 1, -52)
+    SBar.Size = UDim2.new(1, -16, 0, 38)
+    SBar.Position = UDim2.new(0, 8, 1, -44)
     SBar.BackgroundColor3 = DARK
     SBar.BorderSizePixel = 0
     SBar.Parent = Main
     Instance.new("UICorner", SBar).CornerRadius = UDim.new(0, 8)
 
-    -- Status gradient
-    local sGrad = Instance.new("UIGradient", SBar)
-    sGrad.Color = ColorSequence.new(DARK, Color3.fromRGB(18, 14, 30))
-    sGrad.Rotation = 0
-
     StatusText = Instance.new("TextLabel")
-    StatusText.Size = UDim2.new(1, -16, 1, 0)
-    StatusText.Position = UDim2.new(0, 8, 0, 0)
+    StatusText.Size = UDim2.new(1, -14, 1, 0)
+    StatusText.Position = UDim2.new(0, 7, 0, 0)
     StatusText.BackgroundTransparency = 1
     StatusText.TextColor3 = GRAY
-    StatusText.TextSize = 12
+    StatusText.TextSize = 11
     StatusText.Font = Enum.Font.GothamMedium
     StatusText.TextXAlignment = Enum.TextXAlignment.Left
-    StatusText.Text = "Loading remotes..."
+    StatusText.Text = "Loading..."
     StatusText.Parent = SBar
 
     -- ═══ TOGGLE FACTORY ═══
-    local function addToggle(displayName, stateKey, order)
+    local function addToggle(page, displayName, stateKey, order)
         local Row = Instance.new("Frame")
-        Row.Size = UDim2.new(1, 0, 0, 42)
+        Row.Size = UDim2.new(1, 0, 0, 40)
         Row.BackgroundColor3 = BG2
         Row.BorderSizePixel = 0
         Row.LayoutOrder = order
-        Row.Parent = Scroll
-        Instance.new("UICorner", Row).CornerRadius = UDim.new(0, 10)
+        Row.Parent = page
+        Instance.new("UICorner", Row).CornerRadius = UDim.new(0, 9)
 
-        -- Subtle left accent bar
         local AccentBar = Instance.new("Frame")
-        AccentBar.Size = UDim2.new(0, 4, 0, 28)
-        AccentBar.Position = UDim2.new(0, 0, 0.5, -14)
+        AccentBar.Size = UDim2.new(0, 4, 0, 26)
+        AccentBar.Position = UDim2.new(0, 0, 0.5, -13)
         AccentBar.BackgroundColor3 = State[stateKey] and GREEN or ACCENT2
         AccentBar.BorderSizePixel = 0
         AccentBar.Parent = Row
         Instance.new("UICorner", AccentBar).CornerRadius = UDim.new(0, 2)
 
-        -- Label
         local Label = Instance.new("TextLabel")
-        Label.Size = UDim2.new(1, -90, 1, 0)
+        Label.Size = UDim2.new(1, -85, 1, 0)
         Label.Position = UDim2.new(0, 16, 0, 0)
         Label.BackgroundTransparency = 1
         Label.Text = displayName
@@ -316,10 +362,9 @@ local function createGUI()
         Label.TextXAlignment = Enum.TextXAlignment.Left
         Label.Parent = Row
 
-        -- Toggle button
         local Btn = Instance.new("TextButton")
-        Btn.Size = UDim2.new(0, 60, 0, 28)
-        Btn.Position = UDim2.new(1, -72, 0.5, -14)
+        Btn.Size = UDim2.new(0, 58, 0, 26)
+        Btn.Position = UDim2.new(1, -68, 0.5, -13)
         Btn.BackgroundColor3 = State[stateKey] and GREEN or RED
         Btn.Text = State[stateKey] and "ON" or "OFF"
         Btn.TextColor3 = WHITE
@@ -337,20 +382,27 @@ local function createGUI()
         end)
     end
 
-    addToggle("Auto Roll",      "AutoRoll",    1)
-    addToggle("Auto Collect",   "AutoCollect", 2)
-    addToggle("Auto Sell",      "AutoSell",    3)
-    addToggle("Auto Rebirth",   "AutoRebirth", 4)
-    addToggle("Auto Tower",     "AutoTower",   5)
-    addToggle("Auto Dice",      "AutoDice",    6)
-    addToggle("Auto Upgrade",   "AutoUpgrade", 7)
-    addToggle("Auto Spin",      "AutoSpin",    8)
-    addToggle("Auto Level",     "AutoLevel",   9)
-    addToggle("Auto Claim",     "AutoClaim",  10)
-    addToggle("Auto Codes",     "AutoCodes",  11)
-    addToggle("Auto Boost",     "AutoBoost",  12)
-    addToggle("Auto Stats",     "AutoStats",  13)
-    addToggle("Anti-AFK",       "AntiAFK",    14)
+    -- Tab 1: Main (core gameplay)
+    addToggle(pageMain, "Auto Roll",     "AutoRoll",    1)
+    addToggle(pageMain, "Auto Collect",  "AutoCollect", 2)
+    addToggle(pageMain, "Auto Sell",     "AutoSell",    3)
+    addToggle(pageMain, "Auto Rebirth",  "AutoRebirth", 4)
+
+    -- Tab 2: Farm (grinding)
+    addToggle(pageFarm, "Auto Tower",    "AutoTower",   1)
+    addToggle(pageFarm, "Auto Dice",     "AutoDice",    2)
+    addToggle(pageFarm, "Auto Upgrade",  "AutoUpgrade", 3)
+    addToggle(pageFarm, "Auto Level",    "AutoLevel",   4)
+
+    -- Tab 3: Extra (bonus stuff)
+    addToggle(pageExtra, "Auto Spin",    "AutoSpin",    1)
+    addToggle(pageExtra, "Auto Boost",   "AutoBoost",   2)
+    addToggle(pageExtra, "Auto Claim",   "AutoClaim",   3)
+    addToggle(pageExtra, "Auto Codes",   "AutoCodes",   4)
+
+    -- Tab 4: Misc
+    addToggle(pageMisc, "Auto Stats",    "AutoStats",   1)
+    addToggle(pageMisc, "Anti-AFK",      "AntiAFK",     2)
 
     -- ═══ FLOATING ICON (saat close) ═══
     local iconBtn = Instance.new("TextButton")
@@ -395,7 +447,7 @@ else
 end
 
 -- ══════════════════════════════════════════════════
--- LOAD REMOTES (background, setelah GUI muncul)
+-- LOAD REMOTES (background)
 -- ══════════════════════════════════════════════════
 spawn(function()
     wait(2)
@@ -403,17 +455,8 @@ spawn(function()
     local Network = nil
     pcall(function()
         Network = RS:FindFirstChild("Network")
-        if not Network then
-            Network = RS:WaitForChild("Network", 10)
-        end
+        if not Network then Network = RS:WaitForChild("Network", 10) end
     end)
-
-    if Network then
-        print("[JakiDice] Network found!")
-    else
-        warn("[JakiDice] Network NOT found!")
-        if StatusText then StatusText.Text = "Network not found" end
-    end
 
     local function svc(path)
         if not Network then return nil end
@@ -464,15 +507,12 @@ spawn(function()
     for k, v in pairs(R) do
         if v then found = found + 1 else missing = missing + 1 end
     end
-    print("[JakiDice] Remotes: " .. found .. " found, " .. missing .. " missing")
 
-    -- Framework + Data
     local Framework = nil
     pcall(function()
         Framework = RS:FindFirstChild("Framework")
         if not Framework then Framework = RS:WaitForChild("Framework", 5) end
     end)
-
     if Framework then
         pcall(function() DataController = require(Framework.Features.Data.DataController) end)
         pcall(function() Dice           = require(Framework.Features.Rolling.Dice) end)
@@ -481,14 +521,10 @@ spawn(function()
         pcall(function() UpgradeConfig  = require(Framework.Features.Upgrades.Upgrades) end)
     end
 
-    if StatusText then
-        StatusText.Text = found .. " remotes ready"
-    end
+    if StatusText then StatusText.Text = found .. " remotes ready" end
     notify("JakiDice", found .. " remotes loaded!", 3)
 
-    -- ══════════════════════════════════════
-    -- MODULES
-    -- ══════════════════════════════════════
+    -- ═══ MODULES ═══
 
     -- Anti-AFK
     spawn(function()
@@ -518,7 +554,6 @@ spawn(function()
         end
     end)
 
-    -- Auto Roll
     spawn(function()
         while isAlive() do
             if State.AutoRoll and R.RollDice then
@@ -529,7 +564,6 @@ spawn(function()
         end
     end)
 
-    -- Auto Collect
     spawn(function()
         while isAlive() do
             if State.AutoCollect and R.EquipBest then
@@ -540,7 +574,6 @@ spawn(function()
         end
     end)
 
-    -- Auto Sell
     spawn(function()
         while isAlive() do
             if State.AutoSell then
@@ -554,7 +587,6 @@ spawn(function()
         end
     end)
 
-    -- Auto Rebirth
     spawn(function()
         while isAlive() do
             if State.AutoRebirth and R.Rebirth then
@@ -578,7 +610,6 @@ spawn(function()
         end
     end)
 
-    -- Auto Dice
     spawn(function()
         while isAlive() do
             if State.AutoDice and R.BuyDice and R.EquipDice and Dice then
@@ -614,7 +645,6 @@ spawn(function()
         end
     end)
 
-    -- Auto Upgrade
     spawn(function()
         while isAlive() do
             if State.AutoUpgrade and R.BuyUpgrade and UpgradeConfig then
@@ -639,7 +669,6 @@ spawn(function()
         end
     end)
 
-    -- Auto Tower
     spawn(function()
         while isAlive() do
             if State.AutoTower and R.PlayTower then
@@ -664,7 +693,6 @@ spawn(function()
         end
     end)
 
-    -- Auto Codes
     local codesRedeemed = {}
     spawn(function()
         while isAlive() do
@@ -683,7 +711,6 @@ spawn(function()
         end
     end)
 
-    -- Auto Claim
     spawn(function()
         while isAlive() do
             if State.AutoClaim then
@@ -699,7 +726,6 @@ spawn(function()
         end
     end)
 
-    -- Auto Boost
     spawn(function()
         while isAlive() do
             if State.AutoBoost and R.BoostUse then
@@ -712,7 +738,6 @@ spawn(function()
         end
     end)
 
-    -- Auto Spin
     spawn(function()
         while isAlive() do
             if State.AutoSpin and R.UseSpin then
@@ -725,7 +750,6 @@ spawn(function()
         end
     end)
 
-    -- Auto Level
     spawn(function()
         while isAlive() do
             if State.AutoLevel and R.LevelUpSlot then
@@ -750,7 +774,6 @@ spawn(function()
         end
     end)
 
-    -- Auto Stats
     spawn(function()
         while isAlive() do
             if State.AutoStats and R.AddStat then
@@ -768,7 +791,7 @@ spawn(function()
                     local elapsed = tick() - Stats.StartTime
                     local d = getData()
                     local money = d and formatNum(d.Money) or "?"
-                    StatusText.Text = string.format("Time: %s | Money: %s | Rolls: %s | Sells: %s",
+                    StatusText.Text = string.format("%s | $%s | R:%s | S:%s",
                         formatTime(elapsed), money,
                         formatNum(Stats.Rolled), formatNum(Stats.Sold))
                 end
@@ -777,7 +800,6 @@ spawn(function()
         end
     end)
 
-    -- Respawn
     Player.CharacterAdded:Connect(function()
         wait(2)
         notify("JakiDice", "Respawn - Script tetap aktif", 2)
